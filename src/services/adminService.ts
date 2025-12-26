@@ -160,6 +160,22 @@ const adminService = {
     const response = await api.delete(`/admin/users/${userId}`);
     return response.data;
   },
+
+  // Collections Admin
+  createCollection: async (collectionData: any) => {
+    const response = await api.post('/admin/collections', collectionData);
+    return response.data;
+  },
+
+  updateCollection: async (collectionId: string, collectionData: any) => {
+    const response = await api.put(`/admin/collections/${collectionId}`, collectionData);
+    return response.data;
+  },
+
+  deleteCollection: async (collectionId: string) => {
+    const response = await api.delete(`/admin/collections/${collectionId}`);
+    return response.data;
+  },
 };
 
 export default adminService;

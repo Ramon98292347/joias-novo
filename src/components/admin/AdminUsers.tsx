@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, User, Mail, Shield, AlertCircle } from 'lucide-react';
+import AdminLayout from './AdminLayout';
 import adminService from '../../services/adminService';
 
 interface AdminUser {
@@ -142,14 +143,17 @@ const AdminUsers: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
-      </div>
+      <AdminLayout title="Usuários">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <AdminLayout title="Usuários">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -430,7 +434,8 @@ const AdminUsers: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

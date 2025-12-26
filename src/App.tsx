@@ -21,6 +21,7 @@ import AdminCarousel from "./components/admin/AdminCarousel";
 import AdminSettings from "./components/admin/AdminSettings";
 import AdminUsers from "./components/admin/AdminUsers";
 import AdminCategories from "./components/admin/AdminCategories";
+import AdminCollections from "./components/admin/AdminCollections";
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminCoupons from "./components/admin/AdminCoupons";
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/admin/carousel" element={<AdminCarousel />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/collections" element={<AdminCollections />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />
             <Route path="/admin/settings" element={<AdminSettings />} />

@@ -8,7 +8,6 @@ import Hero from "@/components/home/Hero";
 import ProductCarousel from "@/components/product/ProductCarousel";
 import Categories from "@/components/home/Categories";
 import Benefits from "@/components/home/Benefits";
-import Lookbook from "@/components/home/Lookbook";
 import Testimonials from "@/components/home/Testimonials";
 import Newsletter from "@/components/home/Newsletter";
 import InstagramGallery from "@/components/home/InstagramGallery";
@@ -34,7 +33,6 @@ const Index = () => {
           <ProductCarousel />
           <Categories />
           <Benefits />
-          <Lookbook />
           <Testimonials />
           <Newsletter />
           <InstagramGallery />

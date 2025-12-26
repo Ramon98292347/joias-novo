@@ -122,10 +122,8 @@ const Footer = () => {
       <div className="border-t border-border">
         <div className="container py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted text-center md:text-left">
-              © 2024 Ravic Joias. Todos os direitos reservados.
-            </p>
-            <div className="flex items-center gap-6 text-xs text-muted">
+
+            <div className="flex items-center gap-6 text-xs text-muted justify-center md:justify-start">
               <Link to="/privacidade" className="hover:text-primary transition-colors">
                 Como cuidamos da sua privacidade?
               </Link>

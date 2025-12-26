@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const Categorias = () => {
   const categorias = [
@@ -12,7 +13,16 @@ const Categorias = () => {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-serif text-center mb-8">Categorias</h1>
+      <div className="flex items-center justify-between mb-8">
+        <Link to="/">
+          <Button variant="ghost" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </Link>
+        <h1 className="text-3xl font-serif">Categorias</h1>
+        <div></div> {/* Espaço vazio para centralizar o título */}
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categorias.map((categoria) => (

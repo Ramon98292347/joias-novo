@@ -175,12 +175,7 @@ const AdminLogin: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-slate-400 text-sm">
-            © 2024 Petr Leo. Todos os direitos reservados.
-          </p>
-        </div>
+
       </div>
     </div>
   );

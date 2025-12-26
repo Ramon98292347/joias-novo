@@ -296,4 +296,125 @@ async function logAction(userId, action, resourceType, resourceId, oldValues, ne
   }
 }
 
+// Carousel Routes
+// Get carousel items
+router.get('/carousel', async (req, res) => {
+  try {
+    console.log('Fetching carousel items...');
+    
+    // Get carousel items with product details - simplified query
+    const { data: carouselItems, error: carouselError } = await supabase
+      .from('carousel_items')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (carouselError) {
+      console.error('Carousel items error:', carouselError);
+      throw carouselError;
+    }
+
+    console.log('Carousel items found:', carouselItems?.length || 0);
+
+    // Get product details for each item
+    const itemsWithProducts = [];
+    if (carouselItems && carouselItems.length > 0) {
+      for (const item of carouselItems) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('id, name, price, promotional_price, images')
+          .eq('id', item.product_id)
+          .single();
+
+        if (productError) {
+          console.error(`Error fetching product ${item.product_id}:`, productError);
+          continue;
+        }
+
+        itemsWithProducts.push({
+          ...item,
+          product: product
+        });
+      }
+    }
+
+    // Get carousel settings
+    const { data: settings, error: settingsError } = await supabase
+      .from('settings')
+      .select('key, value')
+      .in('key', ['carousel_autoplay', 'carousel_interval']);
+
+    if (settingsError) {
+      console.error('Settings error:', settingsError);
+      throw settingsError;
+    }
+
+    const autoplay = settings?.find(s => s.key === 'carousel_autoplay')?.value === 'true';
+    const interval = parseInt(settings?.find(s => s.key === 'carousel_interval')?.value) || 4000;
+    const transition_time = interval / 1000; // Convert to seconds
+
+    console.log('Sending carousel response:', {
+      itemsCount: itemsWithProducts.length,
+      auto_play: autoplay,
+      transition_time: transition_time
+    });
+
+    res.json({
+      items: itemsWithProducts || [],
+      auto_play: autoplay,
+      transition_time: transition_time
+    });
+  } catch (error) {
+    console.error('Error fetching carousel items:', error);
+    res.status(500).json({ error: 'Erro ao buscar itens do carrossel', details: error.message });
+  }
+});
+
+// Update carousel items
+router.put('/carousel', async (req, res) => {
+  try {
+    const { items } = req.body;
+    const userId = req.user.id;
+
+    // Start transaction
+    const { data: existingItems, error: fetchError } = await supabase
+      .from('carousel_items')
+      .select('id');
+
+    if (fetchError) throw fetchError;
+
+    // Delete existing items
+    if (existingItems && existingItems.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('carousel_items')
+        .delete()
+        .in('id', existingItems.map(item => item.id));
+
+      if (deleteError) throw deleteError;
+    }
+
+    // Insert new items
+    if (items && items.length > 0) {
+      const carouselItems = items.map(item => ({
+        product_id: item.product_id,
+        sort_order: item.sort_order,
+        is_active: item.is_active
+      }));
+
+      const { error: insertError } = await supabase
+        .from('carousel_items')
+        .insert(carouselItems);
+
+      if (insertError) throw insertError;
+    }
+
+    // Log action
+    await logAction(userId, 'update', 'carousel', null, null, { items });
+
+    res.json({ message: 'Carrossel atualizado com sucesso' });
+  } catch (error) {
+    console.error('Error updating carousel items:', error);
+    res.status(500).json({ error: 'Erro ao atualizar carrossel' });
+  }
+});
+
 module.exports = router;

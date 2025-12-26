@@ -1,3 +1,4 @@
+require('dotenv').config();
 const supabase = require('./config/supabase');
 
 async function checkAdmin() {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, Search, User, ShoppingBag, X, Heart } from "lucide-react";
+import { Menu, Search, User, ShoppingBag, X, Heart, Home, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -18,7 +18,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/50">
       <div className="container">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-20 gap-4">
           {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
@@ -50,7 +50,7 @@ const Header = () => {
           </Sheet>
 
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
+          <Link to="/" className="flex-shrink-0 w-32">
             <h1 className="font-serif text-2xl md:text-3xl tracking-wider text-foreground">
               <span className="text-primary">R</span>AVIC
               <span className="block text-[10px] md:text-xs tracking-[0.3em] text-muted font-sans font-light -mt-1">
@@ -59,8 +59,43 @@ const Header = () => {
             </h1>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+          {/* Desktop Navigation Buttons */}
+          <nav className="hidden md:flex items-center gap-4 flex-1 justify-center max-w-md">
+            <Link
+              to="/"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-muted hover:text-primary transition-colors"
+            >
+              <Home className="h-5 w-5" />
+              <span className="text-xs font-medium">Home</span>
+            </Link>
+            <Link
+              to="/buscar"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-muted hover:text-primary transition-colors"
+            >
+              <Search className="h-5 w-5" />
+              <span className="text-xs font-medium">Buscar</span>
+            </Link>
+            <Link
+              to="/categorias"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-muted hover:text-primary transition-colors"
+            >
+              <Grid3X3 className="h-5 w-5" />
+              <span className="text-xs font-medium">Categorias</span>
+            </Link>
+            <Link
+              to="/carrinho"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-muted hover:text-primary transition-colors relative"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span className="text-xs font-medium">Carrinho</span>
+              <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[8px] font-medium flex items-center justify-center text-primary-foreground">
+                0
+              </span>
+            </Link>
+          </nav>
+
+          {/* Desktop Categories Nav */}
+          <nav className="hidden lg:flex items-center gap-6 flex-1 justify-center max-w-2xl">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -73,7 +108,7 @@ const Header = () => {
           </nav>
 
           {/* Icons */}
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-4 w-32 justify-end">
             <Button
               variant="ghost"
               size="icon"

@@ -41,13 +41,13 @@ const categories = [
 const Categories = () => {
   return (
     <section className="py-16 md:py-20 bg-secondary/30">
-      <div className="container">
-        <div className="text-center mb-12">
-          <p className="text-primary text-sm uppercase tracking-wider mb-2">Explore</p>
-          <h2 className="font-serif text-3xl md:text-4xl text-foreground">Nossas Categorias</h2>
+      <div className="container px-4 sm:px-6">
+        <div className="text-center mb-8 xs:mb-10 sm:mb-12">
+          <p className="text-primary text-xs xs:text-sm uppercase tracking-wider mb-1 xs:mb-2">Explore</p>
+          <h2 className="font-serif text-2xl xs:text-3xl md:text-4xl text-foreground">Nossas Categorias</h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 xs:gap-4 md:gap-6">
           {categories.map((category) => (
             <Link
               key={category.name}
@@ -59,11 +59,11 @@ const Categories = () => {
                 alt={category.name}
                 className="w-full h-full object-cover img-zoom"
               />
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-end p-4 md:p-6">
-                <h3 className="font-serif text-xl md:text-2xl text-foreground mb-1 group-hover:text-primary transition-colors">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-end p-3 xs:p-4 md:p-6">
+                <h3 className="font-serif text-lg xs:text-xl md:text-2xl text-foreground mb-0.5 xs:mb-1 group-hover:text-primary transition-colors">
                   {category.name}
                 </h3>
-                <p className="text-xs text-muted">{category.description}</p>
+                <p className="text-[10px] xs:text-xs text-muted">{category.description}</p>
               </div>
             </Link>
           ))}

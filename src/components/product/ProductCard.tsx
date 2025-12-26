@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 
 interface ProductCardProps {
   id: string;
@@ -71,33 +71,32 @@ const ProductCard = ({
           <Heart className="h-4 w-4 text-foreground" />
         </button>
 
-        {/* Quick Add */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <button
-            className="w-full py-2.5 bg-background/95 backdrop-blur-sm text-foreground text-xs font-medium uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              // Add to cart logic
-            }}
-          >
-            Adicionar ao Carrinho
-          </button>
-        </div>
+        {/* Quick Add Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            // Add to cart logic
+          }}
+          className="absolute top-2 xs:top-3 sm:top-4 right-2 xs:right-3 sm:right-4 z-10 bg-background/95 backdrop-blur-sm text-foreground p-1.5 xs:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+          aria-label="Adicionar ao carrinho"
+        >
+          <ShoppingBag className="h-3 w-3 xs:h-4 xs:w-4" />
+        </button>
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="text-[10px] uppercase tracking-wider text-primary mb-1">{category}</p>
-        <h3 className="font-serif text-sm md:text-base text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+      <div className="p-3 xs:p-4">
+        <p className="text-[9px] xs:text-[10px] uppercase tracking-wider text-primary mb-0.5 xs:mb-1">{category}</p>
+        <h3 className="font-serif text-xs xs:text-sm md:text-base text-foreground mb-1 xs:mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {name}
         </h3>
-        <div className="flex items-baseline gap-2">
-          <span className="text-base font-medium text-foreground">{formatPrice(price)}</span>
+        <div className="flex items-baseline gap-1 xs:gap-2">
+          <span className="text-sm xs:text-base font-medium text-foreground">{formatPrice(price)}</span>
           {originalPrice && (
-            <span className="text-sm text-muted line-through">{formatPrice(originalPrice)}</span>
+            <span className="text-xs xs:text-sm text-muted line-through">{formatPrice(originalPrice)}</span>
           )}
         </div>
-        <p className="text-[10px] text-muted mt-1">
+        <p className="text-[9px] xs:text-[10px] text-muted mt-0.5 xs:mt-1">
           ou 10x de {formatPrice(price / 10)} sem juros
         </p>
       </div>

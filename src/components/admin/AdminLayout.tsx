@@ -40,15 +40,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   };
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/admin/products', icon: '📦', label: 'Produtos' },
-    { path: '/admin/categories', icon: '🗂', label: 'Categorias' },
-    { path: '/admin/collections', icon: '✨', label: 'Coleções' },
-    { path: '/admin/orders', icon: '🛒', label: 'Pedidos' },
-    { path: '/admin/carousel', icon: '🎞', label: 'Carrossel Novidades' },
-    { path: '/admin/coupons', icon: '🎟', label: 'Cupons' },
-    { path: '/admin/users', icon: '👥', label: 'Usuários' },
-    { path: '/admin/settings', icon: '⚙', label: 'Configurações' },
+    { path: '/admin/dashboard', icon: '📊', label: 'Dashboard', mobileLabel: 'Dashboard' },
+    { path: '/admin/products', icon: '📦', label: 'Produtos', mobileLabel: 'Produtos' },
+    { path: '/admin/categories', icon: '🗂', label: 'Categorias', mobileLabel: 'Categorias' },
+    { path: '/admin/collections', icon: '✨', label: 'Coleções', mobileLabel: 'Coleções' },
+    { path: '/admin/carousel', icon: '🎞', label: 'Carrossel Novidades', mobileLabel: 'Carrossel' },
+    { path: '/admin/users', icon: '👥', label: 'Usuários', mobileLabel: 'Usuários' },
+    { path: '/admin/settings', icon: '⚙', label: 'Configurações', mobileLabel: 'Ajustes' },
   ];
 
   if (loading) {
@@ -93,7 +91,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <span className="text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium text-sm sm:text-base">{item.label}</span>
                 </Link>
               </li>
             ))}
@@ -115,9 +113,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* Topbar */}
-        <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+        <header className="bg-slate-800 border-b border-slate-700 px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -129,16 +127,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
               </button>
 
               {/* Page Title */}
-              <h1 className="text-xl font-semibold text-white">{title}</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{title}</h1>
             </div>
 
             {/* User Info */}
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="hidden sm:block text-right">
                 <p className="text-sm font-medium text-white">{user?.name}</p>
                 <p className="text-xs text-slate-400">{user?.role}</p>
               </div>
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
                 <span className="text-sm font-bold text-slate-900">
                   {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                 </span>
@@ -148,7 +146,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto">
           {children}
         </main>
       </div>

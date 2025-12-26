@@ -155,14 +155,14 @@ const AdminUsers: React.FC = () => {
     <AdminLayout title="Usuários">
       <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Usuários Administrativos</h1>
-          <p className="text-slate-400 mt-1">Gerencie os usuários do painel administrativo</p>
+      <div className="flex flex-col xs:flex-row xs:justify-between xs:items-start sm:items-center gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-white truncate">Usuários Administrativos</h1>
+          <p className="text-slate-400 mt-1 text-xs xs:text-sm sm:text-base">Gerencie os usuários do painel administrativo</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 sm:px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm sm:text-base flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           Novo Usuário
@@ -170,39 +170,39 @@ const AdminUsers: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-500/20 rounded-lg">
-              <User className="w-5 h-5 text-amber-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-amber-500/20 rounded-lg flex-shrink-0">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
             </div>
-            <div>
-              <p className="text-slate-400 text-sm">Total de Usuários</p>
-              <p className="text-white text-xl font-bold">{users.length}</p>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-xs sm:text-sm">Total de Usuários</p>
+              <p className="text-white text-lg sm:text-xl font-bold">{users.length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/20 rounded-lg">
-              <Shield className="w-5 h-5 text-green-400" />
+        <div className="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-green-500/20 rounded-lg flex-shrink-0">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
             </div>
-            <div>
-              <p className="text-slate-400 text-sm">Administradores</p>
-              <p className="text-white text-xl font-bold">
+            <div className="min-w-0">
+              <p className="text-slate-400 text-xs sm:text-sm">Administradores</p>
+              <p className="text-white text-lg sm:text-xl font-bold">
                 {users.filter(u => u.role === 'admin').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <User className="w-5 h-5 text-blue-400" />
+        <div className="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
             </div>
-            <div>
-              <p className="text-slate-400 text-sm">Editores</p>
-              <p className="text-white text-xl font-bold">
+            <div className="min-w-0">
+              <p className="text-slate-400 text-xs sm:text-sm">Editores</p>
+              <p className="text-white text-lg sm:text-xl font-bold">
                 {users.filter(u => u.role === 'editor').length}
               </p>
             </div>
@@ -213,25 +213,25 @@ const AdminUsers: React.FC = () => {
       {/* Users Table */}
       <div className="bg-slate-800 rounded-lg border border-slate-700">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="min-w-[600px] w-full">
             <thead className="bg-slate-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Usuário
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Função
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Criado em
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Último Login
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -239,30 +239,30 @@ const AdminUsers: React.FC = () => {
             <tbody className="divide-y divide-slate-700">
               {users.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-700/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center">
-                          <User className="h-5 w-5 text-slate-400" />
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="flex items-center min-w-0">
+                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-slate-700 flex items-center justify-center">
+                          <User className="h-3 w-3 sm:h-5 sm:w-5 text-slate-400" />
                         </div>
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-white">{user.name}</div>
-                        <div className="text-sm text-slate-400">{user.email}</div>
+                      <div className="ml-2 sm:ml-4 min-w-0">
+                        <div className="text-xs sm:text-sm font-medium text-white truncate">{user.name}</div>
+                        <div className="text-xs sm:text-sm text-slate-400 truncate">{user.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
                       user.role === 'admin' 
                         ? 'bg-red-500/20 text-red-400' 
                         : 'bg-blue-500/20 text-blue-400'
                     }`}>
-                      {user.role === 'admin' ? 'Administrador' : 'Editor'}
+                      {user.role === 'admin' ? 'Admin' : 'Editor'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
                       user.is_active 
                         ? 'bg-green-500/20 text-green-400' 
                         : 'bg-gray-500/20 text-gray-400'
@@ -270,27 +270,27 @@ const AdminUsers: React.FC = () => {
                       {user.is_active ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                  <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-slate-400">
                     {formatDate(user.created_at)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                  <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-slate-400">
                     {user.last_login ? formatDate(user.last_login) : 'Nunca'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                    <div className="flex items-center justify-end gap-1 sm:gap-2">
                       <button
                         onClick={() => handleEdit(user)}
                         className="text-amber-400 hover:text-amber-300 p-1 transition-colors"
                         title="Editar"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(user.id)}
                         className="text-red-400 hover:text-red-300 p-1 transition-colors"
                         title="Excluir"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   </td>

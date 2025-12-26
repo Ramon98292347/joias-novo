@@ -91,20 +91,22 @@ const Categoria = () => {
         <main className="flex-1">
           {/* Hero */}
           <section className="bg-secondary py-12 md:py-20">
-            <div className="container text-center">
-              <h1 className="text-3xl md:text-5xl font-serif text-foreground mb-4">
-                {category.title}
-              </h1>
-              <p className="text-muted max-w-2xl mx-auto">
-                {category.description}
-              </p>
+            <div className="container px-4 sm:px-6">
+              <div className="text-center mb-8 xs:mb-10 sm:mb-12">
+                <h1 className="font-serif text-3xl xs:text-4xl md:text-5xl text-foreground mb-3 xs:mb-4">
+                  {category.title}
+                </h1>
+                <p className="text-base xs:text-lg text-muted max-w-2xl mx-auto">
+                  {category.description}
+                </p>
+              </div>
             </div>
           </section>
 
           {/* Products Grid */}
           <section className="py-12 md:py-20">
-            <div className="container">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="container px-4 sm:px-6">
+              <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4 md:gap-6">
                 {category.products.map((product) => (
                   <ProductCard key={product.id} {...product} />
                 ))}

@@ -159,13 +159,13 @@ const AdminCarousel: React.FC = () => {
   }
 
   return (
-    <AdminLayout title="Carrossel de Novidades">
-      <div className="space-y-6">
+      <AdminLayout title="Carrossel de Novidades">
+      <div className="space-y-4 sm:space-y-6">
         {/* Settings */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold text-white mb-4">Configurações do Carrossel</h3>
+        <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Configurações do Carrossel</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             <div>
               <label className="flex items-center space-x-2">
                 <input
@@ -206,14 +206,14 @@ const AdminCarousel: React.FC = () => {
         </div>
 
         {/* Add Product */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold text-white mb-4">Adicionar Produto ao Carrossel</h3>
+        <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Adicionar Produto ao Carrossel</h3>
           
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm sm:text-base"
             >
               <option value="">Selecione um produto</option>
               {availableProducts.map((product) => (
@@ -225,7 +225,7 @@ const AdminCarousel: React.FC = () => {
             <button
               onClick={handleAddProduct}
               disabled={!selectedProduct}
-              className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               Adicionar
             </button>
@@ -233,8 +233,8 @@ const AdminCarousel: React.FC = () => {
         </div>
 
         {/* Current Items */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold text-white mb-4">Produtos no Carrossel ({carouselItems.length})</h3>
+        <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Produtos no Carrossel ({carouselItems.length})</h3>
           
           {carouselItems.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
@@ -245,12 +245,12 @@ const AdminCarousel: React.FC = () => {
               <p className="text-sm">Adicione produtos novos para exibir no carrossel da página inicial.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {carouselItems.map((item, index) => (
-                <div key={item.id || index} className="bg-slate-700/50 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden">
+                <div key={item.id || index} className="bg-slate-700/50 rounded-lg p-3 sm:p-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden flex-shrink-0">
                         <img
                           src={getPrimaryImage(item.product)}
                           alt={item.product.name}
@@ -260,18 +260,18 @@ const AdminCarousel: React.FC = () => {
                           }}
                         />
                       </div>
-                      <div>
-                        <h4 className="text-white font-medium">{item.product.name}</h4>
-                        <p className="text-slate-400 text-sm">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-white font-medium text-sm sm:text-base truncate">{item.product.name}</h4>
+                        <p className="text-slate-400 text-xs sm:text-sm">
                           {formatCurrency(item.product.promotional_price || item.product.price)}
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-between lg:justify-end space-x-2 sm:space-x-3">
                       <button
                         onClick={() => handleToggleActive(index)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                           item.is_active
                             ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                             : 'bg-slate-500/20 text-slate-400 hover:bg-slate-500/30'
@@ -315,8 +315,8 @@ const AdminCarousel: React.FC = () => {
         </div>
 
         {/* Preview */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold text-white mb-4">Prévia do Carrossel</h3>
+        <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Prévia do Carrossel</h3>
           
           <div className="bg-slate-900 rounded-lg p-8">
             <div className="text-center text-slate-400">

@@ -1,0 +1,344 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/500.css';
+@import '@fontsource/playfair-display/600.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+/* Ravic Joias - Premium Jewelry Design System */
+
+@layer base {
+  :root {
+    /* Primary - Azul Petróleo Escuro */
+    --background: 197 26% 26%;
+    --foreground: 40 8% 95%;
+
+    /* Card/Popover - Slightly lighter petrol */
+    --card: 197 26% 30%;
+    --card-foreground: 40 8% 95%;
+
+    --popover: 197 26% 28%;
+    --popover-foreground: 40 8% 95%;
+
+    /* Primary - Dourado Fosco (Gold Accent) */
+    --primary: 30 27% 49%;
+    --primary-foreground: 40 8% 98%;
+
+    /* Secondary - Lighter petrol blue */
+    --secondary: 197 20% 35%;
+    --secondary-foreground: 40 8% 95%;
+
+    /* Muted - Soft gray with warmth */
+    --muted: 40 6% 77%;
+    --muted-foreground: 197 20% 30%;
+
+    /* Accent - Cream/Light */
+    --accent: 40 20% 96%;
+    --accent-foreground: 197 26% 26%;
+
+    /* Destructive */
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 40 8% 98%;
+
+    /* Borders and inputs */
+    --border: 197 15% 40%;
+    --input: 197 15% 38%;
+    --ring: 30 27% 49%;
+
+    --radius: 0.375rem;
+
+    /* Custom Ravic tokens */
+    --gold: 30 27% 49%;
+    --gold-light: 30 35% 60%;
+    --gold-dark: 30 25% 40%;
+    --petrol: 197 26% 26%;
+    --petrol-light: 197 20% 35%;
+    --petrol-dark: 197 30% 20%;
+    --cream: 40 20% 96%;
+    --cream-dark: 40 15% 88%;
+
+    /* Shadows */
+    --shadow-gold: 0 4px 20px -4px hsl(30 27% 49% / 0.3);
+    --shadow-elegant: 0 8px 30px -8px hsl(0 0% 0% / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.15);
+
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(30 35% 55%), hsl(30 25% 45%));
+    --gradient-hero: linear-gradient(180deg, hsl(197 26% 26% / 0.9), hsl(197 26% 20% / 0.95));
+
+    /* Sidebar */
+    --sidebar-background: 197 26% 24%;
+    --sidebar-foreground: 40 8% 95%;
+    --sidebar-primary: 30 27% 49%;
+    --sidebar-primary-foreground: 40 8% 98%;
+    --sidebar-accent: 197 20% 32%;
+    --sidebar-accent-foreground: 40 8% 95%;
+    --sidebar-border: 197 15% 35%;
+    --sidebar-ring: 30 27% 49%;
+  }
+
+  .dark {
+    --background: 197 30% 18%;
+    --foreground: 40 8% 95%;
+
+    --card: 197 28% 22%;
+    --card-foreground: 40 8% 95%;
+
+    --popover: 197 28% 20%;
+    --popover-foreground: 40 8% 95%;
+
+    --primary: 30 30% 55%;
+    --primary-foreground: 197 30% 15%;
+
+    --secondary: 197 22% 28%;
+    --secondary-foreground: 40 8% 95%;
+
+    --muted: 197 18% 30%;
+    --muted-foreground: 40 8% 70%;
+
+    --accent: 197 20% 25%;
+    --accent-foreground: 40 8% 95%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 40 8% 98%;
+
+    --border: 197 18% 28%;
+    --input: 197 18% 26%;
+    --ring: 30 30% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    @apply font-medium tracking-tight;
+  }
+}
+
+@layer components {
+  /* Premium Button Styles */
+  .btn-gold {
+    @apply relative overflow-hidden bg-primary text-primary-foreground px-8 py-3 font-medium tracking-wide uppercase text-sm;
+    @apply border border-primary/50 rounded-sm;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:bg-primary/90 hover:shadow-lg hover:border-primary;
+  }
+
+  .btn-gold::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, transparent 0%, hsl(30 40% 70% / 0.2) 50%, transparent 100%);
+  }
+
+  .btn-gold:hover::after {
+    @apply opacity-100;
+  }
+
+  .btn-outline-gold {
+    @apply relative bg-transparent text-primary px-8 py-3 font-medium tracking-wide uppercase text-sm;
+    @apply border border-primary rounded-sm;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:bg-primary hover:text-primary-foreground;
+  }
+
+  /* Product Card Luxury Effect */
+  .product-card {
+    @apply relative bg-card rounded-sm overflow-hidden transition-all duration-500;
+    @apply border border-transparent;
+  }
+
+  .product-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none z-10;
+    border: 1px solid hsl(var(--primary));
+    border-radius: inherit;
+  }
+
+  .product-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .product-card:hover {
+    @apply shadow-lg;
+    box-shadow: 0 8px 40px -12px hsl(30 27% 49% / 0.25);
+  }
+
+  /* Premium Text Styles */
+  .text-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(135deg, hsl(30 35% 60%), hsl(30 25% 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Elegant Link Underline */
+  .link-elegant {
+    @apply relative inline-block;
+  }
+
+  .link-elegant::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-px bg-primary scale-x-0 origin-right transition-transform duration-300;
+  }
+
+  .link-elegant:hover::after {
+    @apply scale-x-100 origin-left;
+  }
+
+  /* Shimmer Effect for Premium Elements */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(30 40% 70% / 0.1) 50%,
+      transparent 100%
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Section Divider */
+  .divider-gold {
+    @apply w-16 h-px bg-primary mx-auto;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-background/80 backdrop-blur-md;
+  }
+
+  /* Mobile Bottom Bar */
+  .mobile-bar {
+    @apply fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border;
+    @apply flex items-center justify-around py-2 z-50;
+  }
+
+  /* Category Card */
+  .category-card {
+    @apply relative overflow-hidden rounded-sm cursor-pointer;
+  }
+
+  .category-card::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent;
+    @apply transition-all duration-500;
+  }
+
+  .category-card:hover::after {
+    @apply from-background/80 via-background/30;
+  }
+
+  /* Topbar Animation */
+  .topbar-text {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer utilities {
+  /* Fade animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-delay-1 {
+    animation: fadeIn 0.6s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-in-delay-2 {
+    animation: fadeIn 0.6s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-in-delay-3 {
+    animation: fadeIn 0.6s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Slide animations */
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scale on hover */
+  .hover-scale {
+    @apply transition-transform duration-300;
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  /* Image zoom on hover */
+  .img-zoom {
+    @apply transition-transform duration-700 ease-out;
+  }
+
+  .group:hover .img-zoom {
+    transform: scale(1.08);
+  }
+}

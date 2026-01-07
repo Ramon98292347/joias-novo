@@ -1,79 +1,163 @@
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import Header from "@/components/layout/Header";
+import { Link, useParams } from "react-router-dom";
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import MobileBar from "@/components/layout/MobileBar";
-import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import ProductCard from "@/components/product/ProductCard";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
-import productRing from "@/assets/product-ring.jpg";
-import productNecklace from "@/assets/product-necklace.jpg";
-import productWatch from "@/assets/product-watch.jpg";
-import productPen from "@/assets/product-pen.jpg";
-import productBracelet from "@/assets/product-bracelet.jpg";
-import productAliancas from "@/assets/product-aliancas.jpg";
+interface PublicCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+}
 
-const categoryData: Record<string, { title: string; description: string; products: any[] }> = {
-  joias: {
-    title: "Joias",
-    description: "Descubra nossa coleção exclusiva de joias em ouro e prata.",
-    products: [
-      { id: 1, name: "Anel Solitário Ouro 18k", price: 4890, originalPrice: 5490, image: productRing, isNew: true },
-      { id: 2, name: "Colar Pérolas Naturais", price: 3290, image: productNecklace },
-      { id: 3, name: "Pulseira Tennis Diamantes", price: 8990, originalPrice: 9990, image: productBracelet, isNew: true },
-    ],
-  },
-  relogios: {
-    title: "Relógios",
-    description: "Relógios de luxo das melhores marcas do mundo.",
-    products: [
-      { id: 4, name: "Relógio Clássico Automático", price: 12890, image: productWatch, isNew: true },
-      { id: 5, name: "Relógio Elegance Ouro", price: 18990, originalPrice: 21990, image: productWatch },
-    ],
-  },
-  canetas: {
-    title: "Canetas",
-    description: "Canetas de luxo para quem aprecia a arte da escrita.",
-    products: [
-      { id: 6, name: "Caneta Executiva Premium", price: 2890, image: productPen },
-      { id: 7, name: "Caneta Ouro Rosé", price: 4590, originalPrice: 5290, image: productPen, isNew: true },
-    ],
-  },
-  aliancas: {
-    title: "Alianças",
-    description: "Alianças que simbolizam o amor eterno.",
-    products: [
-      { id: 8, name: "Par de Alianças Ouro 18k", price: 6890, image: productAliancas, isNew: true },
-      { id: 9, name: "Alianças Diamantes", price: 9990, originalPrice: 11990, image: productAliancas },
-    ],
-  },
-  acessorios: {
-    title: "Acessórios",
-    description: "Acessórios sofisticados para completar seu visual.",
-    products: [
-      { id: 10, name: "Pulseira Couro Premium", price: 890, image: productBracelet },
-      { id: 11, name: "Abotoaduras Ouro", price: 1890, originalPrice: 2290, image: productRing, isNew: true },
-    ],
-  },
+interface PublicCollection {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+}
+
+interface ProductImage {
+  url: string;
+  is_primary?: boolean | null;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  promotional_price?: number | null;
+  description?: string | null;
+  is_new?: boolean | null;
+  category?: { id: string; name: string; slug: string } | null;
+  collection?: { id: string; name: string; slug: string } | null;
+  images?: ProductImage[] | null;
+}
+
+type Source =
+  | { kind: "category"; id: string; name: string; description: string }
+  | { kind: "collection"; id: string; name: string; description: string };
+
+const getApiBaseUrl = () => {
+  const rawApiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+  const withoutTrailingSlash = String(rawApiUrl).replace(/\/$/, "");
+  return withoutTrailingSlash.endsWith("/api")
+    ? withoutTrailingSlash.slice(0, -4)
+    : withoutTrailingSlash;
 };
 
 const Categoria = () => {
   const { slug } = useParams<{ slug: string }>();
-  const category = slug ? categoryData[slug] : null;
+  const baseUrl = useMemo(() => getApiBaseUrl(), []);
+  const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState<Source | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!category) {
+  useEffect(() => {
+    const run = async () => {
+      if (!slug) return;
+      setLoading(true);
+      setNotFound(false);
+      setSource(null);
+      setProducts([]);
+
+      try {
+        const [categoriesRes, collectionsRes] = await Promise.all([
+          fetch(`${baseUrl}/api/public/categories`),
+          fetch(`${baseUrl}/api/public/collections`),
+        ]);
+
+        const categoriesJson = categoriesRes.ok ? await categoriesRes.json() : null;
+        const collectionsJson = collectionsRes.ok ? await collectionsRes.json() : null;
+
+        const categories: PublicCategory[] = Array.isArray(categoriesJson?.categories) ? categoriesJson.categories : [];
+        const collections: PublicCollection[] = Array.isArray(collectionsJson?.collections) ? collectionsJson.collections : [];
+
+        const matchedCategory = categories.find((c) => c?.slug === slug);
+        const matchedCollection = matchedCategory ? null : collections.find((c) => c?.slug === slug);
+
+        if (!matchedCategory && !matchedCollection) {
+          setNotFound(true);
+          return;
+        }
+
+        const nextSource: Source = matchedCategory
+          ? {
+              kind: "category",
+              id: matchedCategory.id,
+              name: matchedCategory.name || "",
+              description: matchedCategory.description || "",
+            }
+          : {
+              kind: "collection",
+              id: matchedCollection!.id,
+              name: matchedCollection!.name || "",
+              description: matchedCollection!.description || "",
+            };
+
+        setSource(nextSource);
+
+        const queryParam = nextSource.kind === "category" ? "category" : "collection";
+        const productsRes = await fetch(
+          `${baseUrl}/api/public/products?page=1&limit=200&${queryParam}=${encodeURIComponent(nextSource.id)}`
+        );
+
+        if (!productsRes.ok) {
+          setProducts([]);
+          return;
+        }
+
+        const productsJson = await productsRes.json();
+        setProducts(Array.isArray(productsJson?.products) ? productsJson.products : []);
+      } catch {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, [baseUrl, slug]);
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-serif text-foreground mb-4">Categoria não encontrada</h1>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted">Carregando produtos...</p>
+          </div>
+        </main>
+        <Footer />
+        <MobileBar />
+        <WhatsAppButton />
+      </div>
+    );
+  }
+
+  if (notFound || !source) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-serif text-foreground mb-4">
+              Categoria/Coleção não encontrada
+            </h1>
             <Link to="/" className="text-primary hover:underline">
               Voltar para a home
             </Link>
           </div>
         </main>
         <Footer />
+        <MobileBar />
+        <WhatsAppButton />
       </div>
     );
   }
@@ -81,8 +165,8 @@ const Categoria = () => {
   return (
     <>
       <Helmet>
-        <title>{category.title} | Ravic Joias</title>
-        <meta name="description" content={category.description} />
+        <title>{source.name} | Ravic Joias</title>
+        <meta name="description" content={source.description} />
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col">
@@ -94,10 +178,10 @@ const Categoria = () => {
             <div className="container px-4 sm:px-6">
               <div className="text-center mb-8 xs:mb-10 sm:mb-12">
                 <h1 className="font-serif text-3xl xs:text-4xl md:text-5xl text-foreground mb-3 xs:mb-4">
-                  {category.title}
+                  {source.name}
                 </h1>
                 <p className="text-base xs:text-lg text-muted max-w-2xl mx-auto">
-                  {category.description}
+                  {source.description}
                 </p>
               </div>
             </div>
@@ -107,12 +191,26 @@ const Categoria = () => {
           <section className="py-12 md:py-20">
             <div className="container px-4 sm:px-6">
               <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4 md:gap-6">
-                {category.products.map((product) => (
-                  <ProductCard key={product.id} {...product} />
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.promotional_price ?? undefined}
+                    image={
+                      product.images?.find((img) => img?.is_primary)?.url ||
+                      product.images?.[0]?.url ||
+                      "/placeholder.svg"
+                    }
+                    category={product.category?.name || "Sem categoria"}
+                    isNew={Boolean(product.is_new)}
+                    isBestseller={false}
+                  />
                 ))}
               </div>
 
-              {category.products.length === 0 && (
+              {products.length === 0 && (
                 <p className="text-center text-muted py-12">
                   Nenhum produto encontrado nesta categoria.
                 </p>

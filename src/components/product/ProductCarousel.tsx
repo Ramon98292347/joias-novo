@@ -2,70 +2,49 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 
-import productRing from "@/assets/product-ring.jpg";
-import productNecklace from "@/assets/product-necklace.jpg";
-import productWatch from "@/assets/product-watch.jpg";
-import productPen from "@/assets/product-pen.jpg";
-import productBracelet from "@/assets/product-bracelet.jpg";
-import productAliancas from "@/assets/product-aliancas.jpg";
-
-const mockProducts = [
-  {
-    id: "1",
-    name: "Anel Solitário Diamante 0.30ct Ouro 18k",
-    price: 4890,
-    originalPrice: 5490,
-    image: productRing,
-    category: "Anéis",
-    isNew: true,
-  },
-  {
-    id: "2",
-    name: "Colar Pingente Girassol Ouro 18k",
-    price: 3250,
-    image: productNecklace,
-    category: "Colares",
-    isBestseller: true,
-  },
-  {
-    id: "3",
-    name: "Relógio Clássico Rose Gold",
-    price: 2890,
-    image: productWatch,
-    category: "Relógios",
-    isNew: true,
-  },
-  {
-    id: "4",
-    name: "Caneta Tinteiro Ouro Gravado",
-    price: 1590,
-    image: productPen,
-    category: "Canetas",
-  },
-  {
-    id: "5",
-    name: "Pulseira Elos Ouro 18k",
-    price: 2190,
-    image: productBracelet,
-    category: "Pulseiras",
-    isBestseller: true,
-  },
-  {
-    id: "6",
-    name: "Par de Alianças Ouro 18k com Diamantes",
-    price: 6890,
-    originalPrice: 7990,
-    image: productAliancas,
-    category: "Alianças",
-    isNew: true,
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  promotional_price?: number | null;
+  description?: string | null;
+  is_new?: boolean | null;
+  category?: { id: string; name: string; slug: string } | null;
+  collection?: { id: string; name: string; slug: string } | null;
+  images?: { url: string; is_primary?: boolean | null }[] | null;
+}
 
 const ProductCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [itemsPerView, setItemsPerView] = useState(4);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Carrega produtos da API
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+        console.log("Buscando produtos de:", `${baseUrl}/api/public/products?page=1&limit=12`);
+        const res = await fetch(`${baseUrl}/api/public/products?page=1&limit=12`);
+        console.log("Resposta da API:", res.status, res.statusText);
+        if (!res.ok) throw new Error(`Erro ao buscar produtos: ${res.status}`);
+        const data = await res.json();
+        console.log("Dados recebidos:", data);
+        setProducts(Array.isArray(data?.products) ? data.products : []);
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // Atualiza quantidade de itens por view baseado no tamanho da tela
   useEffect(() => {
     const updateItemsPerView = () => {
       if (window.innerWidth < 640) setItemsPerView(1.5);
@@ -79,7 +58,7 @@ const ProductCarousel = () => {
     return () => window.removeEventListener("resize", updateItemsPerView);
   }, []);
 
-  const maxIndex = Math.max(0, mockProducts.length - Math.floor(itemsPerView));
+  const maxIndex = Math.max(0, products.length - Math.floor(itemsPerView));
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
@@ -95,6 +74,31 @@ const ProductCarousel = () => {
     const timer = setInterval(nextSlide, 4000);
     return () => clearInterval(timer);
   }, [isHovered, nextSlide]);
+
+  if (loading) {
+    return (
+      <section className="py-16 md:py-20">
+        <div className="container">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-primary text-sm uppercase tracking-wider mb-2">Exclusividade</p>
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground">Novidades da Loja</h2>
+            </div>
+          </div>
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted">Carregando produtos...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) {
+    return null; // Não mostra nada se não houver produtos
+  }
 
   return (
     <section className="py-16 md:py-20">
@@ -133,13 +137,26 @@ const ProductCarousel = () => {
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
             }}
           >
-            {mockProducts.map((product) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className="flex-shrink-0 px-2"
                 style={{ width: `${100 / itemsPerView}%` }}
               >
-                <ProductCard {...product} />
+                <ProductCard
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.promotional_price ?? undefined}
+                  image={
+                    product.images?.find((img) => img?.is_primary)?.url ||
+                    product.images?.[0]?.url ||
+                    "/placeholder.svg"
+                  }
+                  category={product.category?.name || "Sem categoria"}
+                  isNew={Boolean(product.is_new)}
+                  isBestseller={false}
+                />
               </div>
             ))}
           </div>

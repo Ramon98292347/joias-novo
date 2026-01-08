@@ -102,7 +102,20 @@ export const adminData = {
     return data || [];
   },
 
-  async addCarouselItem(payload: { product_id: string; sort_order: number; is_active: boolean }) {
+  async addCarouselItem(payload: {
+    product_id: string;
+    title: string;
+    subtitle?: string | null;
+    description?: string | null;
+    image_url: string;
+    link_url?: string | null;
+    button_text?: string | null;
+    sort_order: number;
+    is_active: boolean;
+    start_date?: string | null;
+    end_date?: string | null;
+    created_by?: string | null;
+  }) {
     const { data, error } = await supabase
       .from("itens_do_carrossel")
       .insert(payload)

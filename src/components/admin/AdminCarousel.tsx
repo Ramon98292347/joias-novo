@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
-import { fetchProducts } from '@/services/publicData';
+import { fetchProducts, fetchCollections } from '@/services/publicData';
 import { adminData } from '@/services/adminData';
+import { adminAuth } from '@/services/adminAuth';
 
 interface CarouselItem {
   id: string;
@@ -26,11 +27,25 @@ const AdminCarousel: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [autoPlay, setAutoPlay] = useState(true);
   const [transitionTime, setTransitionTime] = useState(4);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [collectionId, setCollectionId] = useState('');
+  const [collections, setCollections] = useState<any[]>([]);
 
   useEffect(() => {
     loadCarouselItems();
-    loadAvailableProducts();
+    loadCollections();
   }, []);
+
+  useEffect(() => {
+    loadAvailableProducts();
+  }, [searchTerm, collectionId]);
+
+  const loadCollections = async () => {
+    try {
+      const cols = await fetchCollections();
+      setCollections(cols || []);
+    } catch {}
+  };
 
   const loadCarouselItems = async () => {
     try {
@@ -53,7 +68,7 @@ const AdminCarousel: React.FC = () => {
 
   const loadAvailableProducts = async () => {
     try {
-      const { products } = await fetchProducts({ page: 1, limit: 200, isNew: true });
+      const { products } = await fetchProducts({ page: 1, limit: 200, search: searchTerm || undefined, collection: collectionId || undefined });
       setAvailableProducts(products || []);
     } catch (error) {
       console.error('Error loading available products:', error);
@@ -66,10 +81,21 @@ const AdminCarousel: React.FC = () => {
     if (!selectedProduct) return;
 
     try {
+      const p = availableProducts.find((ap) => ap.id === selectedProduct) || carouselItems.find(ci => ci.product?.id === selectedProduct)?.product;
+      const primaryImage = p?.images?.find(img => img?.is_primary) || p?.images?.[0];
+      const imageUrl = primaryImage?.url || '/placeholder.svg';
+      const user = await adminAuth.getCurrentUser().catch(() => null);
       await adminData.addCarouselItem({
         product_id: selectedProduct,
+        title: p?.name || 'Produto',
+        subtitle: null,
+        description: null,
+        image_url: imageUrl,
+        link_url: null,
+        button_text: 'Ver Produto',
         sort_order: carouselItems.length + 1,
         is_active: true,
+        created_by: user?.id || null,
       });
       
       setSelectedProduct('');
@@ -201,6 +227,23 @@ const AdminCarousel: React.FC = () => {
           <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Adicionar Produto ao Carrossel</h3>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nome"
+              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm sm:text-base"
+            />
+            <select
+              value={collectionId}
+              onChange={(e) => setCollectionId(e.target.value)}
+              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm sm:text-base"
+            >
+              <option value="">Todas as coleções</option>
+              {collections.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}

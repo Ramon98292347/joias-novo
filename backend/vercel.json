@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_KEY": "@supabase_key",
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_EXPIRES_IN": "@jwt_expires_in",
+    "FRONTEND_URL": "@frontend_url",
+    "ADMIN_LOGIN_MAX_ATTEMPTS": "@admin_login_max_attempts",
+    "ADMIN_LOGIN_BLOCK_TIME": "@admin_login_block_time",
+    "MAX_FILE_SIZE": "@max_file_size",
+    "ALLOWED_FILE_TYPES": "@allowed_file_types"
+  }
+}

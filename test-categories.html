@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testar API de Categorias</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; margin: 10px 0; }
+        .result { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .error { background: #ffe0e0; color: #d00; }
+        .success { background: #e0ffe0; color: #060; }
+    </style>
+</head>
+<body>
+    <h1>Testar API de Categorias</h1>
+    <button onclick="testarCategorias()">Testar Categorias</button>
+    <div id="resultado" class="result"></div>
+
+    <script>
+        async function testarCategorias() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = 'Carregando...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/public/categories');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultado.innerHTML = `<div class="success">✅ Sucesso! Encontradas ${data.categories?.length || 0} categorias</div>`;
+                    resultado.innerHTML += `<pre>${JSON.stringify(data.categories?.slice(0, 3), null, 2)}...</pre>`;
+                    console.log('Categorias completas:', data);
+                } else {
+                    resultado.innerHTML = `<div class="error">❌ Erro ${response.status}: ${response.statusText}</div>`;
+                }
+            } catch (error) {
+                resultado.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+                console.error('Erro completo:', error);
+            }
+        }
+    </script>
+</body>
+</html>

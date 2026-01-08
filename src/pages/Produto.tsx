@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { ShoppingCart, Heart, Share2, ChevronLeft, ChevronRight, Star, Truck, Shield, Package } from "lucide-react";
 import { cartService } from "@/services/cart";
@@ -8,35 +8,9 @@ import Footer from "@/components/layout/Footer";
 import MobileBar from "@/components/layout/MobileBar";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import OptimizedImage from "@/components/OptimizedImage";
+import { fetchProductById, type Product as PublicProduct } from "@/services/publicData";
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  original_price?: number;
-  material?: string;
-  stock: number;
-  is_active: boolean;
-  is_new: boolean;
-  is_featured: boolean;
-  is_bestseller: boolean;
-  categories?: {
-    name: string;
-    slug: string;
-  };
-  collections?: {
-    name: string;
-    slug: string;
-  };
-  product_images?: Array<{
-    id: string;
-    url: string;
-    alt_text: string;
-    is_primary: boolean;
-    sort_order: number;
-  }>;
-}
+type Product = PublicProduct & { is_bestseller?: boolean };
 
 const Produto = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,31 +22,24 @@ const Produto = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const load = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${id}`);
-        if (!response.ok) {
-          throw new Error('Produto não encontrado');
+        if (!id) return;
+        const data = await fetchProductById(id);
+        if (!data) throw new Error("Produto não encontrado");
+        setProduct(data as Product);
+        const imgs = data.images || [];
+        if (imgs.length > 0) {
+          const primary = imgs.find((i) => i?.is_primary) || imgs[0];
+          setSelectedImage(primary ? imgs.indexOf(primary) : 0);
         }
-        const data = await response.json();
-        setProduct(data.product);
-        
-        // Set first image as selected if available
-        if (data.product.product_images && data.product.product_images.length > 0) {
-          const primaryImage = data.product.product_images.find((img: any) => img.is_primary);
-          setSelectedImage(primaryImage ? data.product.product_images.indexOf(primaryImage) : 0);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar produto:', error);
-        // Redirect to 404 or show error message
+      } catch (e) {
+        console.error("Erro ao buscar produto:", e);
       } finally {
         setLoading(false);
       }
     };
-
-    if (id) {
-      fetchProduct();
-    }
+    load();
   }, [id]);
 
   const formatPrice = (value: number) => {
@@ -82,12 +49,15 @@ const Produto = () => {
     });
   };
 
-  const calculateDiscount = () => {
-    if (product?.original_price && product.price < product.original_price) {
-      return Math.round(((product.original_price - product.price) / product.original_price) * 100);
+  const { displayPrice, originalPrice, discount } = useMemo(() => {
+    if (!product) return { displayPrice: 0, originalPrice: undefined as number | undefined, discount: 0 };
+    const promo = product.promotional_price ?? null;
+    if (promo && promo < product.price) {
+      const pct = Math.round(((product.price - promo) / product.price) * 100);
+      return { displayPrice: promo, originalPrice: product.price, discount: pct };
     }
-    return 0;
-  };
+    return { displayPrice: product.price, originalPrice: undefined, discount: 0 };
+  }, [product]);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -164,8 +134,7 @@ const Produto = () => {
     );
   }
 
-  const discount = calculateDiscount();
-  const images = product.product_images || [];
+  const images = product?.images || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -184,10 +153,10 @@ const Produto = () => {
         <nav className="flex items-center space-x-2 text-sm text-muted mb-8">
           <Link to="/" className="hover:text-foreground">Home</Link>
           <span>/</span>
-          {product.categories && (
+          {product.category && (
             <>
-              <Link to={`/categoria/${product.categories.slug}`} className="hover:text-foreground">
-                {product.categories.name}
+              <Link to={`/categoria/${product.category.slug}`} className="hover:text-foreground">
+                {product.category.name}
               </Link>
               <span>/</span>
             </>
@@ -258,9 +227,9 @@ const Produto = () => {
           <div className="space-y-6">
             {/* Header */}
             <div>
-              {product.collections && (
+              {product.collection && (
                 <p className="text-sm text-primary uppercase tracking-wider mb-2">
-                  {product.collections.name}
+                  {product.collection.name}
                 </p>
               )}
               <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
@@ -291,11 +260,11 @@ const Produto = () => {
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-medium text-foreground">
-                  {formatPrice(product.price)}
+                  {formatPrice(displayPrice)}
                 </span>
-                {product.original_price && product.original_price > product.price && (
+                {originalPrice && originalPrice > displayPrice && (
                   <span className="text-xl text-muted line-through">
-                    {formatPrice(product.original_price)}
+                    {formatPrice(originalPrice)}
                   </span>
                 )}
               </div>

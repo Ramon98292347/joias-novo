@@ -35,7 +35,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   const handleLogout = async () => {
     try {
       await adminAuth.signOut();
-      navigate('/admin/login');
+      navigate('/');
     } catch {}
   };
 

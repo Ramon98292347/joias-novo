@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testar API de Busca</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .error { background: #ffe0e0; }
+        .success { background: #e0ffe0; }
+        input { padding: 8px; margin: 5px; width: 300px; }
+        button { padding: 8px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Testar API de Busca de Produtos</h1>
+    
+    <div class="test-section">
+        <h3>Buscar Produtos</h3>
+        <input type="text" id="searchInput" placeholder="Digite o termo de busca..." value="ouro">
+        <button onclick="testSearch()">Buscar</button>
+        <button onclick="testSearch('relogio')">Buscar "relogio"</button>
+        <button onclick="testSearch('joia')">Buscar "joia"</button>
+        <div id="searchResults"></div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3001";
+
+        async function testSearch(term = null) {
+            const searchTerm = term || document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!searchTerm.trim()) {
+                resultsDiv.innerHTML = '<div class="result error">Digite um termo de busca</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="result">Buscando...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/public/products?search=${encodeURIComponent(searchTerm)}&limit=10`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let html = `<div class="result success">✅ Busca realizada com sucesso!</div>`;
+                html += `<div class="result">Termo: "${searchTerm}"</div>`;
+                html += `<div class="result">Produtos encontrados: ${data.products?.length || 0}</div>`;
+                
+                if (data.products && data.products.length > 0) {
+                    html += '<div class="result"><strong>Produtos:</strong><ul>';
+                    data.products.slice(0, 5).forEach(product => {
+                        html += `<li>${product.name} - R$ ${product.price}</li>`;
+                    });
+                    if (data.products.length > 5) {
+                        html += `<li>... e mais ${data.products.length - 5} produtos</li>`;
+                    }
+                    html += '</ul></div>';
+                } else {
+                    html += '<div class="result">Nenhum produto encontrado para este termo.</div>';
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">❌ Erro: ${error.message}</div>`;
+                console.error('Erro na busca:', error);
+            }
+        }
+
+        // Testar automaticamente ao carregar
+        window.onload = function() {
+            testSearch('ouro');
+        };
+    </script>
+</body>
+</html>

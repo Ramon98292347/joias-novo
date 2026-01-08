@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testar Imagens do Supabase</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .image-container { display: inline-block; margin: 10px; text-align: center; }
+        .image-container img { max-width: 200px; max-height: 200px; border: 1px solid #ddd; padding: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Testar Imagens do Supabase</h1>
+    
+    <div class="test-section">
+        <h3>Imagens que estavam dando erro ORB</h3>
+        <div id="imageTests">
+            <div class="image-container">
+                <img src="https://czuokqkoycdeajmzzdap.supabase.co/storage/v1/object/public/product-images/aliancas-prata-2025/aliancas-doce-destino-5mm-5mm-prata-925.png" 
+                     alt="Alianças Doce Destino" 
+                     onload="this.parentElement.innerHTML += '<span class=\"success\">✅ Carregou</span>'"
+                     onerror="this.parentElement.innerHTML += '<span class=\"error\">❌ Erro</span>'">
+                <p>aliancas-doce-destino</p>
+            </div>
+            
+            <div class="image-container">
+                <img src="https://czuokqkoycdeajmzzdap.supabase.co/storage/v1/object/public/product-images/aliancas-prata-2025/aliancas-infinita-8mm-8mm-prata-925.png" 
+                     alt="Alianças Infinita" 
+                     onload="this.parentElement.innerHTML += '<span class=\"success\">✅ Carregou</span>'"
+                     onerror="this.parentElement.innerHTML += '<span class=\"error\">❌ Erro</span>'">
+                <p>aliancas-infinita</p>
+            </div>
+            
+            <div class="image-container">
+                <img src="https://czuokqkoycdeajmzzdap.supabase.co/storage/v1/object/public/product-images/aliancas-prata-2025/aliancas-aurora-8mm-8mm-prata-925.png" 
+                     alt="Alianças Aurora" 
+                     onload="this.parentElement.innerHTML += '<span class=\"success\">✅ Carregou</span>'"
+                     onerror="this.parentElement.innerHTML += '<span class=\"error\">❌ Erro</span>'">
+                <p>aliancas-aurora</p>
+            </div>
+        </div>
+        <div id="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Testar Solução com Cross-Origin</h3>
+        <div id="crossOriginTests">
+            <div class="image-container">
+                <img src="https://czuokqkoycdeajmzzdap.supabase.co/storage/v1/object/public/product-images/aliancas-prata-2025/aliancas-doce-destino-5mm-5mm-prata-925.png" 
+                     alt="Alianças Doce Destino" 
+                     crossorigin="anonymous"
+                     onload="this.parentElement.innerHTML += '<span class=\"success\">✅ Carregou com crossorigin</span>'"
+                     onerror="this.parentElement.innerHTML += '<span class=\"error\">❌ Erro com crossorigin</span>'">
+                <p>Com crossorigin</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Testar Fallback para Placeholder</h3>
+        <div class="image-container">
+            <img src="https://url-invalida-que-nao-existe.com/imagem.jpg" 
+                 alt="Imagem inválida" 
+                 onerror="this.src='/placeholder.svg'; this.onerror=null; this.parentElement.innerHTML += '<span class=\"success\">✅ Fallback funcionou</span>'">
+            <p>Teste de fallback</p>
+        </div>
+    </div>
+
+    <script>
+        // Testar todas as imagens após carregar
+        window.onload = function() {
+            const images = document.querySelectorAll('img');
+            let loaded = 0;
+            let failed = 0;
+            
+            images.forEach(img => {
+                img.onload = function() {
+                    loaded++;
+                    updateResults();
+                };
+                
+                img.onerror = function() {
+                    failed++;
+                    updateResults();
+                };
+            });
+            
+            function updateResults() {
+                if (loaded + failed === images.length) {
+                    document.getElementById('results').innerHTML = `
+                        <div class="result">
+                            <strong>Resultados:</strong><br>
+                            Carregadas: ${loaded}<br>
+                            Falhadas: ${failed}<br>
+                            Total: ${images.length}
+                        </div>
+                    `;
+                }
+            }
+        };
+    </script>
+</body>
+</html>

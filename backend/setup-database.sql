@@ -1,5 +1,67 @@
 -- Script SQL para criar tabelas do sistema admin
 
+-- Função RPC: sincroniza o usuário autenticado na tabela admin_users
+create or replace function public.admin_users_sync_current_user()
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_claims jsonb := current_setting('request.jwt.claims', true)::jsonb;
+  v_email text := coalesce(v_claims->>'email', '');
+  v_user_meta jsonb := coalesce(v_claims->'user_metadata', '{}'::jsonb);
+  v_name text := coalesce(v_user_meta->>'name', '');
+  v_role text := coalesce(v_user_meta->>'role', 'editor');
+begin
+  insert into public.admin_users (id, email, name, role, is_active, created_at, updated_at)
+  values (v_uid, v_email, v_name, v_role, true, now(), now())
+  on conflict (id) do update
+    set email = excluded.email,
+        name = excluded.name,
+        role = excluded.role,
+        updated_at = now();
+  return v_uid;
+end;
+$$;
+
+grant execute on function public.admin_users_sync_current_user() to authenticated;
+
+-- Função + Trigger: cria/atualiza admin_users ao inserir em auth.users
+create or replace function public.handle_new_admin_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.admin_users (id, email, name, role, is_active, created_at, updated_at)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    coalesce(new.raw_user_meta_data->>'role', 'editor'),
+    true,
+    now(),
+    now()
+  )
+  on conflict (id) do update
+    set email = excluded.email,
+        name = excluded.name,
+        role = excluded.role,
+        updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row
+execute function public.handle_new_admin_user();
+
+
 -- Tabela de usuários admin
 CREATE TABLE IF NOT EXISTS admin_users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

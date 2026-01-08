@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste API</title>
+</head>
+<body>
+    <h1>Teste de API</h1>
+    <button onclick="testarAPI()">Testar API</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function testarAPI() {
+            try {
+                const response = await fetch('http://localhost:3001/api/public/products?page=1&limit=12');
+                const data = await response.json();
+                document.getElementById('resultado').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                console.log('Dados recebidos:', data);
+            } catch (error) {
+                document.getElementById('resultado').innerHTML = '<p style="color: red;">Erro: ' + error.message + '</p>';
+                console.error('Erro:', error);
+            }
+        }
+    </script>
+</body>
+</html>

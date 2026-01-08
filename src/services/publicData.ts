@@ -152,3 +152,18 @@ export const fetchCarouselItemsPublic = async (): Promise<CarouselItem[]> => {
     product: r.product || null,
   }));
 };
+
+export const fetchProductById = async (id: string): Promise<Product | null> => {
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `id,name,description,price,promotional_price,material,stock,is_active,is_new,is_featured,
+       category:categories(id,name,slug,description),
+       collection:coleções(id,name,slug,description),
+       images:imagens_do_produto(id,url,alt_text,is_primary,sort_order)`
+    )
+    .eq("id", id)
+    .single();
+  if (error) return null;
+  return (data as any) as Product;
+};

@@ -19,15 +19,15 @@ type OrderInsert = {
 };
 
 const tryInsert = async (table: string, payload: any) => {
-  const { data, error } = await supabase.from(table).insert(payload).select().single();
+  const { error } = await supabase.from(table).insert(payload);
   if (error) throw error;
-  return data;
+  return true;
 };
 
 const tryInsertOrderItems = async (table: string, payloads: any[]) => {
-  const { data, error } = await supabase.from(table).insert(payloads).select();
+  const { error } = await supabase.from(table).insert(payloads);
   if (error) throw error;
-  return data;
+  return true;
 };
 
 export const checkoutService = {
@@ -47,14 +47,14 @@ export const checkoutService = {
       notes: null,
     };
 
-    let orderRow: any;
-    try {
-      orderRow = await tryInsert("pedidos", orderPayload);
-    } catch (e) {
-      orderRow = await tryInsert("orders", orderPayload);
-    }
-
-    const orderId = orderRow.id;
+    await tryInsert("pedidos", orderPayload);
+    const { data: fetchedOrder, error: fetchErr } = await supabase
+      .from("pedidos")
+      .select("id")
+      .eq("order_number", orderNumber)
+      .single();
+    if (fetchErr || !fetchedOrder) throw fetchErr || new Error("Falha ao obter pedido");
+    const orderId = (fetchedOrder as any).id;
 
     const orderItemsPayload = items.map((it) => ({
       order_id: orderId,
@@ -66,11 +66,7 @@ export const checkoutService = {
       subtotal: it.total_price,
     }));
 
-    try {
-      await tryInsertOrderItems("itens_do_pedido", orderItemsPayload);
-    } catch (e) {
-      await tryInsertOrderItems("order_items", orderItemsPayload);
-    }
+    await tryInsertOrderItems("itens_do_pedido", orderItemsPayload);
 
     const payload = {
       order_id: orderId,

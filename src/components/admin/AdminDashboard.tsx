@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
-import adminService from '../../services/adminService';
+import { supabase } from '@/lib/supabase';
 
 interface DashboardStats {
   totalSales: number;
@@ -24,7 +24,25 @@ const AdminDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await adminService.getDashboardStats();
+      const { count: totalProducts } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      const { count: lowStockProducts } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .lte('stock', 0)
+        .eq('is_active', true);
+
+      const data: DashboardStats = {
+        totalSales: 0,
+        todayOrders: 0,
+        totalProducts: totalProducts || 0,
+        lowStockProducts: lowStockProducts || 0,
+        recentOrders: [],
+        salesChart: [],
+      };
       setStats(data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);

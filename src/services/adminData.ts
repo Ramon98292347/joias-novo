@@ -24,6 +24,10 @@ export const adminData = {
   },
 
   async deleteProduct(id: string) {
+    // delete dependent rows first to satisfy FK constraints
+    await supabase.from("inventário").delete().eq("product_id", id);
+    await supabase.from("imagens_do_produto").delete().eq("product_id", id);
+    await supabase.from("itens_do_carrossel").delete().eq("product_id", id);
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) throw new Error(error.message);
   },
@@ -62,4 +66,3 @@ export const adminData = {
     if (error) throw new Error(error.message);
   },
 };
-

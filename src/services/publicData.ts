@@ -22,6 +22,7 @@ export type Product = {
   category?: { id: string; name: string; slug: string; description?: string | null } | null;
   collection?: { id: string; name: string; slug: string; description?: string | null } | null;
   images?: ProductImage[] | null;
+  sizes?: number[] | null;
 };
 
 export type Category = {
@@ -157,7 +158,7 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
   const { data, error } = await supabase
     .from("products")
     .select(
-      `id,name,description,price,promotional_price,material,stock,is_active,is_new,is_featured,
+      `id,name,description,price,promotional_price,material,stock,is_active,is_new,is_featured,sizes,
        category:categories(id,name,slug,description),
        collection:coleções(id,name,slug,description),
        images:imagens_do_produto(id,url,alt_text,is_primary,sort_order)`

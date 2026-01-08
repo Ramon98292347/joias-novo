@@ -19,7 +19,7 @@ const Produto = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -301,19 +301,24 @@ const Produto = () => {
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Tamanho</label>
               <div className="flex flex-wrap gap-2">
-                {['PP', 'P', 'M', 'G', 'GG'].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border rounded-lg transition-colors ${
-                      selectedSize === size
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {(() => {
+                  const sizes = (product as any).sizes && Array.isArray((product as any).sizes)
+                    ? (product as any).sizes as number[]
+                    : Array.from({ length: 28 }, (_, i) => i + 5);
+                  return sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-2 border rounded-lg transition-colors ${
+                        selectedSize === size
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ));
+                })()}
               </div>
             </div>
 

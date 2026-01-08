@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { fetchProducts, fetchCategories } from '@/services/publicData';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface Product {
   id: string;
@@ -13,7 +14,7 @@ interface Product {
   is_featured: boolean;
   is_new: boolean;
   category?: { name: string };
-  images?: { image_url: string; is_primary: boolean }[];
+  images?: { url: string; is_primary?: boolean | null }[];
 }
 
 const AdminProducts: React.FC = () => {
@@ -68,8 +69,8 @@ const AdminProducts: React.FC = () => {
   };
 
   const getPrimaryImage = (product: Product) => {
-    const primaryImage = product.images?.find(img => img.is_primary);
-    return primaryImage?.image_url || '/placeholder-product.jpg';
+    const primary = product.images?.find((img) => img?.is_primary) || product.images?.[0];
+    return primary?.url || '/placeholder.svg';
   };
 
   return (
@@ -171,13 +172,10 @@ const AdminProducts: React.FC = () => {
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-slate-700/50">
                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                      <img
+                      <OptimizedImage
                         src={getPrimaryImage(product)}
                         alt={product.name}
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-product.jpg';
-                        }}
                       />
                     </td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">

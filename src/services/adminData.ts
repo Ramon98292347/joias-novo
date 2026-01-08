@@ -144,4 +144,27 @@ export const adminData = {
       return null;
     }
   },
+
+  async ensureCurrentAdminUser(): Promise<string | null> {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) return null;
+      const u = data.user as any;
+      const payload = {
+        id: u.id,
+        email: u.email,
+        name: u.user_metadata?.name || "",
+        role: u.user_metadata?.role || "editor",
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      };
+      const { error: upErr } = await supabase
+        .from("admin_users")
+        .upsert(payload, { onConflict: "id" });
+      if (upErr) return null;
+      return u.id as string;
+    } catch {
+      return null;
+    }
+  },
 };

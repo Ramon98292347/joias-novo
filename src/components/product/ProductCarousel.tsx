@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { getApiBaseUrl } from "@/lib/api";
+import { fetchCollections, fetchProducts } from "@/services/publicData";
 
 interface Product {
   id: string;
@@ -26,18 +26,12 @@ const ProductCarousel = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
-        const colRes = await fetch(`${baseUrl}/api/public/collections`);
-        if (!colRes.ok) throw new Error(`Erro ao buscar coleções: ${colRes.status}`);
-        const colJson = await colRes.json();
-        const collections = Array.isArray(colJson?.collections) ? colJson.collections : [];
+        const collections = await fetchCollections();
 
         const perCollection = await Promise.all(
           collections.map(async (c: any) => {
-            const res = await fetch(`${baseUrl}/api/public/products?page=1&limit=2&collection=${encodeURIComponent(c.id)}`);
-            if (!res.ok) return [] as any[];
-            const data = await res.json();
-            return Array.isArray(data?.products) ? data.products : [];
+            const { products } = await fetchProducts({ page: 1, limit: 2, collection: c.id });
+            return products;
           })
         );
 

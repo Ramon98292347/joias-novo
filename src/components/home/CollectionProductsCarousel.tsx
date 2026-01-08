@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductCard from "@/components/product/ProductCard";
-import { getApiBaseUrl } from "@/lib/api";
+import { fetchProducts } from "@/services/publicData";
 
 interface CollectionInfo {
   id: string;
@@ -30,11 +30,8 @@ const CollectionProductsCarousel = ({ collection }: { collection: CollectionInfo
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
-        const res = await fetch(`${baseUrl}/api/public/products?page=1&limit=10&collection=${encodeURIComponent(collection.id)}`);
-        if (!res.ok) throw new Error(`Erro ao buscar produtos: ${res.status}`);
-        const data = await res.json();
-        setProducts(Array.isArray(data?.products) ? data.products : []);
+        const { products } = await fetchProducts({ page: 1, limit: 10, collection: collection.id });
+        setProducts(Array.isArray(products) ? products : []);
       } catch {
         setProducts([]);
       } finally {
@@ -153,4 +150,3 @@ const CollectionProductsCarousel = ({ collection }: { collection: CollectionInfo
 };
 
 export default CollectionProductsCarousel;
-

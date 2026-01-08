@@ -43,8 +43,6 @@ type Source =
   | { kind: "category"; id: string; name: string; description: string }
   | { kind: "collection"; id: string; name: string; description: string };
 
-const getApiBase = () => getApiBaseUrl();
-
 const Categoria = () => {
   const { slug } = useParams<{ slug: string }>();
   const baseUrl = useMemo(() => "", []);
@@ -100,7 +98,7 @@ const Categoria = () => {
     };
 
     run();
-  }, [baseUrl, slug]);
+  }, [slug]);
 
   if (loading) {
     return (

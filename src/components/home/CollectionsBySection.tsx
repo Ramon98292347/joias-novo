@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CollectionProductsCarousel from "@/components/home/CollectionProductsCarousel";
-import { getApiBaseUrl } from "@/lib/api";
+import { fetchCollections } from "@/services/publicData";
 
 interface Collection {
   id: string;
@@ -14,11 +14,8 @@ const CollectionsBySection = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
-        const res = await fetch(`${baseUrl}/api/public/collections`);
-        if (!res.ok) throw new Error("Erro ao buscar coleções");
-        const data = await res.json();
-        setCollections(Array.isArray(data?.collections) ? data.collections : []);
+        const data = await fetchCollections();
+        setCollections(Array.isArray(data) ? data : []);
       } catch {
         setCollections([]);
       }
@@ -38,4 +35,3 @@ const CollectionsBySection = () => {
 };
 
 export default CollectionsBySection;
-

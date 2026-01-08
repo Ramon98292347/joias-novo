@@ -134,4 +134,14 @@ export const adminData = {
     const { error } = await supabase.from("itens_do_carrossel").update(payload).eq("id", id);
     if (error) throw new Error(error.message);
   },
+
+  async syncCurrentAdminUser(): Promise<string | null> {
+    try {
+      const { data, error } = await supabase.rpc("admin_users_sync_current_user");
+      if (error) return null;
+      return (data as any) || null;
+    } catch {
+      return null;
+    }
+  },
 };

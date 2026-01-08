@@ -85,6 +85,7 @@ const AdminCarousel: React.FC = () => {
       const primaryImage = p?.images?.find(img => img?.is_primary) || p?.images?.[0];
       const imageUrl = primaryImage?.url || '/placeholder.svg';
       const user = await adminAuth.getCurrentUser().catch(() => null);
+      const ensuredId = await adminData.syncCurrentAdminUser();
       await adminData.addCarouselItem({
         product_id: selectedProduct,
         title: p?.name || 'Produto',
@@ -95,7 +96,7 @@ const AdminCarousel: React.FC = () => {
         button_text: 'Ver Produto',
         sort_order: carouselItems.length + 1,
         is_active: true,
-        created_by: user?.id || null,
+        created_by: ensuredId || user?.id || null,
       });
       
       setSelectedProduct('');

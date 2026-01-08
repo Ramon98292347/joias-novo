@@ -353,19 +353,42 @@ const AdminCarousel: React.FC = () => {
         <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
           <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Prévia do Carrossel</h3>
           
-          <div className="bg-slate-900 rounded-lg p-8">
-            <div className="text-center text-slate-400">
-              <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p>Prévia do carrossel será exibida aqui</p>
-              <p className="text-sm mt-1">Com transição automática a cada {transitionTime} segundos</p>
-              {autoPlay && <p className="text-xs mt-2">🔄 Autoplay ativado</p>}
-            </div>
+          <div className="bg-slate-900 rounded-lg p-3 sm:p-4">
+            <CarouselPreview items={carouselItems} autoPlay={autoPlay} transition={transitionTime} />
           </div>
         </div>
       </div>
     </AdminLayout>
+  );
+};
+
+const CarouselPreview = ({ items, autoPlay, transition }: { items: any[]; autoPlay: boolean; transition: number }) => {
+  const [index, setIndex] = React.useState(0);
+  React.useEffect(() => {
+    if (!autoPlay || items.length === 0) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % items.length), transition * 1000);
+    return () => clearInterval(id);
+  }, [autoPlay, transition, items.length]);
+
+  if (items.length === 0) {
+    return <div className="text-center text-slate-400 py-10">Nenhum item para prévia</div>;
+  }
+
+  const current = items[index];
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      <img src={current.image_url} alt={current.title} className="w-full h-48 sm:h-64 object-cover" />
+      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-end">
+        <h4 className="text-white text-lg sm:text-xl font-semibold">{current.title}</h4>
+        {current.subtitle && <p className="text-slate-200 text-sm">{current.subtitle}</p>}
+      </div>
+      <div className="absolute inset-x-0 bottom-2 flex justify-center gap-2">
+        {items.map((_, i) => (
+          <button key={i} onClick={() => setIndex(i)} className={`h-2 w-2 rounded-full ${i === index ? 'bg-amber-400' : 'bg-slate-500'}`} />
+        ))}
+      </div>
+    </div>
   );
 };
 

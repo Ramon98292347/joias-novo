@@ -102,3 +102,53 @@ export const fetchProducts = async (params: {
   return { products: (data as any) || [], total: count || 0 };
 };
 
+export type CarouselItem = {
+  id: string;
+  product_id: string | null;
+  title: string;
+  subtitle?: string | null;
+  description?: string | null;
+  image_url: string;
+  link_url?: string | null;
+  button_text?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  start_date?: string | null;
+  end_date?: string | null;
+  product?: Product | null;
+};
+
+export const fetchCarouselItemsPublic = async (): Promise<CarouselItem[]> => {
+  const now = new Date().toISOString();
+  let query = supabase
+    .from("itens_do_carrossel")
+    .select(
+      `id,product_id,title,subtitle,description,image_url,link_url,button_text,sort_order,is_active,start_date,end_date,
+       product:products(id,name,price,promotional_price,
+         images:imagens_do_produto(id,url,is_primary,sort_order))`
+    )
+    .eq("is_active", true)
+    .lte("start_date", now)
+    .order("sort_order", { ascending: true });
+
+  const { data, error } = await query;
+  if (error) return [];
+  const rows = (data || []) as any[];
+  // Optionally filter out expired
+  const filtered = rows.filter((r) => !r.end_date || new Date(r.end_date) >= new Date());
+  return filtered.map((r) => ({
+    id: r.id,
+    product_id: r.product_id,
+    title: r.title,
+    subtitle: r.subtitle,
+    description: r.description,
+    image_url: r.image_url,
+    link_url: r.link_url,
+    button_text: r.button_text,
+    sort_order: r.sort_order,
+    is_active: r.is_active,
+    start_date: r.start_date,
+    end_date: r.end_date,
+    product: r.product || null,
+  }));
+};

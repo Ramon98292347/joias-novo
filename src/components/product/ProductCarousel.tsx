@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { fetchCollections, fetchProducts } from "@/services/publicData";
+import { fetchCarouselItemsPublic } from "@/services/publicData";
 
 interface Product {
   id: string;
@@ -26,17 +26,11 @@ const ProductCarousel = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const collections = await fetchCollections();
-
-        const perCollection = await Promise.all(
-          collections.map(async (c: any) => {
-            const { products } = await fetchProducts({ page: 1, limit: 2, collection: c.id });
-            return products;
-          })
-        );
-
-        const combined = perCollection.flat();
-        setProducts(combined);
+        const items = await fetchCarouselItemsPublic();
+        const products = items
+          .map((it) => it.product)
+          .filter(Boolean) as any[];
+        setProducts(products);
       } catch (error) {
         setProducts([]);
       } finally {

@@ -27,15 +27,23 @@ const ProductCarousel = () => {
     const loadProducts = async () => {
       try {
         const baseUrl = getApiBaseUrl();
-        console.log("Buscando produtos de:", `${baseUrl}/api/public/products?page=1&limit=12`);
-        const res = await fetch(`${baseUrl}/api/public/products?page=1&limit=12`);
-        console.log("Resposta da API:", res.status, res.statusText);
-        if (!res.ok) throw new Error(`Erro ao buscar produtos: ${res.status}`);
-        const data = await res.json();
-        console.log("Dados recebidos:", data);
-        setProducts(Array.isArray(data?.products) ? data.products : []);
+        const colRes = await fetch(`${baseUrl}/api/public/collections`);
+        if (!colRes.ok) throw new Error(`Erro ao buscar coleções: ${colRes.status}`);
+        const colJson = await colRes.json();
+        const collections = Array.isArray(colJson?.collections) ? colJson.collections : [];
+
+        const perCollection = await Promise.all(
+          collections.map(async (c: any) => {
+            const res = await fetch(`${baseUrl}/api/public/products?page=1&limit=2&collection=${encodeURIComponent(c.id)}`);
+            if (!res.ok) return [] as any[];
+            const data = await res.json();
+            return Array.isArray(data?.products) ? data.products : [];
+          })
+        );
+
+        const combined = perCollection.flat();
+        setProducts(combined);
       } catch (error) {
-        console.error("Erro ao carregar produtos:", error);
         setProducts([]);
       } finally {
         setLoading(false);

@@ -5,7 +5,7 @@ import MobileBar from "@/components/layout/MobileBar";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import Hero from "@/components/home/Hero";
 import ProductCarousel from "@/components/product/ProductCarousel";
-import CollectionsCarousel from "@/components/home/CollectionsCarousel";
+import CollectionsBySection from "@/components/home/CollectionsBySection";
 import Categories from "@/components/home/Categories";
 import Benefits from "@/components/home/Benefits";
 import Testimonials from "@/components/home/Testimonials";
@@ -30,7 +30,7 @@ const Index = () => {
         <main className="flex-1">
           <Hero />
           <ProductCarousel />
-          <CollectionsCarousel />
+          <CollectionsBySection />
           <Categories />
           <Benefits />
           <Testimonials />

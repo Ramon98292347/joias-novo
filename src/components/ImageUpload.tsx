@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { adminData } from '@/services/adminData';
 
 interface ImageUploadProps {
   productId: string;
@@ -50,33 +51,20 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('alt_text', file.name);
-    formData.append('is_primary', existingImages.length === 0 ? 'true' : 'false');
-
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/storage/products/${productId}/images/upload`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'public-assets';
+      const path = `products/${productId}/${Date.now()}-${file.name}`;
+      const { publicUrl, storagePath } = await adminData.uploadToStorage(bucket, path, file);
+      await adminData.addProductImage(productId, {
+        url: publicUrl,
+        alt_text: file.name,
+        is_primary: existingImages.length === 0,
+        sort_order: existingImages.length,
+        bucket_name: bucket,
+        storage_path: storagePath,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao fazer upload');
-      }
-
-      toast({
-        title: 'Sucesso',
-        description: 'Imagem enviada com sucesso!'
-      });
-
-      onUploadComplete(data.url, data.data.id);
-
+      toast({ title: 'Sucesso', description: 'Imagem enviada com sucesso!' });
+      onUploadComplete(publicUrl, storagePath);
     } catch (error) {
       console.error('Erro no upload:', error);
       toast({
@@ -111,24 +99,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleRemoveImage = async (imageId: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/storage/images/${imageId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao excluir imagem');
-      }
-
-      toast({
-        title: 'Sucesso',
-        description: 'Imagem excluída com sucesso!'
-      });
-
+      // Remoção lógica apenas do registro. A remoção física do storage pode ser feita posteriormente.
+      // Precisa do id do registro em imagens_do_produto; aqui usamos imageId recebido.
+      await adminData.deleteProductImage?.(imageId);
+      toast({ title: 'Sucesso', description: 'Imagem excluída com sucesso!' });
       onImageRemove?.(imageId);
-
     } catch (error) {
       console.error('Erro ao excluir:', error);
       toast({

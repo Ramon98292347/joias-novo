@@ -58,6 +58,17 @@ const AdminCategories: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'public-assets';
+      const path = `categories/${formData.slug || Date.now()}/${Date.now()}-${file.name}`;
+      const { publicUrl } = await adminData.uploadToStorage(bucket, path, file);
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (e) {
+      alert('Erro ao enviar imagem da categoria');
+    }
+  };
+
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setFormData({
@@ -269,6 +280,9 @@ const AdminCategories: React.FC = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                     className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                   />
+                  <div className="mt-2">
+                    <input type="file" accept="image/*" onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])} />
+                  </div>
                 </div>
                 
                 <div>

@@ -167,4 +167,30 @@ export const adminData = {
       return null;
     }
   },
+
+  async uploadToStorage(bucket: string, path: string, file: File): Promise<{ publicUrl: string; storagePath: string }> {
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return { publicUrl: data.publicUrl, storagePath: path };
+  },
+
+  async addProductImage(productId: string, payload: { url: string; alt_text?: string | null; is_primary?: boolean | null; sort_order?: number | null; bucket_name?: string | null; storage_path?: string | null }) {
+    const insert: any = {
+      product_id: productId,
+      url: payload.url,
+      alt_text: payload.alt_text ?? null,
+      is_primary: payload.is_primary ?? null,
+      sort_order: payload.sort_order ?? null,
+      bucket_name: payload.bucket_name ?? null,
+      storage_path: payload.storage_path ?? null,
+    };
+    const { error } = await supabase.from("imagens_do_produto").insert(insert);
+    if (error) throw new Error(error.message);
+  },
+
+  async deleteProductImage(imageId: string) {
+    const { error } = await supabase.from("imagens_do_produto").delete().eq("id", imageId);
+    if (error) throw new Error(error.message);
+  },
 };

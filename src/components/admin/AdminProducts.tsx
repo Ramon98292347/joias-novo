@@ -234,7 +234,7 @@ const AdminProducts: React.FC = () => {
                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                       <div className="flex items-center space-x-1 sm:space-x-2">
                         <Link
-                          to={`/admin/products/${product.id}`}
+                          to={`/admin/products/${product.id}/edit`}
                           className="text-amber-400 hover:text-amber-300"
                         >
                           ✏️

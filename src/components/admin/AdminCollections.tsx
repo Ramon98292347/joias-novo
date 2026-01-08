@@ -130,6 +130,17 @@ const AdminCollections: React.FC = () => {
     resetForm();
   };
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'public-assets';
+      const path = `collections/${formData.slug || Date.now()}/${Date.now()}-${file.name}`;
+      const { publicUrl } = await (await import('@/services/adminData')).adminData.uploadToStorage(bucket, path, file);
+      setFormData({ ...formData, image_url: publicUrl });
+    } catch (e) {
+      alert('Erro ao enviar imagem da coleção');
+    }
+  };
+
   const toggleStatus = async (collection: Collection) => {
     try {
       await adminData.upsertCollection(collection.id, { is_active: !collection.is_active });
@@ -326,6 +337,9 @@ const AdminCollections: React.FC = () => {
                     className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                     placeholder="https://exemplo.com/imagem.jpg"
                   />
+                  <div className="mt-2">
+                    <input type="file" accept="image/*" onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])} />
+                  </div>
                 </div>
 
                 <div>

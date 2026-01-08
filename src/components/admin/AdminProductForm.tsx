@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { fetchCategories, fetchCollections } from '@/services/publicData';
 import { adminData } from '@/services/adminData';
+import ImageUpload from '@/components/ImageUpload';
 
 interface ProductForm {
   name: string;
@@ -46,6 +47,7 @@ const AdminProductForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [existingImages, setExistingImages] = useState<any[]>([]);
 
   useEffect(() => {
     loadCategories();
@@ -77,6 +79,11 @@ const AdminProductForm: React.FC = () => {
     try {
       setLoading(true);
       const product = await adminData.getProduct(id!);
+      const { data: imgs } = await (await import('@/lib/supabase')).supabase
+        .from('imagens_do_produto')
+        .select('id,url,alt_text,is_primary,sort_order')
+        .eq('product_id', id!);
+      setExistingImages((imgs as any) || []);
       
       setFormData({
         name: product.name,
@@ -157,10 +164,26 @@ const AdminProductForm: React.FC = () => {
         stock: parseInt(formData.stock),
       };
 
-      await adminData.upsertProduct(isEditing ? id! : null, productData);
+      const newId = await adminData.upsertProduct(isEditing ? id! : null, productData);
 
       // Upload images if any
-      // Upload de imagens via Supabase Storage poderá ser habilitado na próxima etapa
+      if (!isEditing && formData.images.length > 0) {
+        const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'public-assets';
+        const productId = newId as string;
+        for (let i = 0; i < formData.images.length; i++) {
+          const file = formData.images[i];
+          const path = `products/${productId}/${Date.now()}-${file.name}`;
+          const { publicUrl, storagePath } = await adminData.uploadToStorage(bucket, path, file);
+          await adminData.addProductImage(productId, {
+            url: publicUrl,
+            alt_text: file.name,
+            is_primary: i === 0,
+            sort_order: i,
+            bucket_name: bucket,
+            storage_path: storagePath,
+          });
+        }
+      }
 
       navigate('/admin/products');
     } catch (error) {
@@ -389,47 +412,15 @@ const AdminProductForm: React.FC = () => {
           {/* Images */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <h3 className="text-lg font-semibold text-white mb-4">Imagens do Produto</h3>
-            
-            <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                id="image-upload"
+            {isEditing ? (
+              <ImageUpload
+                productId={id!}
+                existingImages={existingImages}
+                onUploadComplete={() => loadProduct()}
+                onImageRemove={() => loadProduct()}
               />
-              <label
-                htmlFor="image-upload"
-                className="cursor-pointer flex flex-col items-center space-y-2"
-              >
-                <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <span className="text-slate-300">Clique para adicionar imagens</span>
-                <span className="text-slate-500 text-sm">ou arraste e solte</span>
-              </label>
-            </div>
-
-            {formData.images.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+            ) : (
+              <div className="text-slate-300 text-sm">As imagens serão enviadas após criar o produto.</div>
             )}
           </div>
 

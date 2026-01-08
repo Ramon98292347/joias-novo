@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { ShoppingCart, Heart, Share2, ChevronLeft, ChevronRight, Star, Truck, Shield, Package } from "lucide-react";
+import { cartService } from "@/services/cart";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileBar from "@/components/layout/MobileBar";
@@ -88,18 +89,16 @@ const Produto = () => {
     return 0;
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    
-    // Add to cart logic here
-    console.log('Adicionando ao carrinho:', {
-      product: product.id,
-      quantity,
-      size: selectedSize
-    });
-    
-    // Show success message
-    alert('Produto adicionado ao carrinho!');
+    const unit = product.price;
+    const customization = selectedSize ? { size: selectedSize } : null;
+    try {
+      await cartService.addItem(product.id, quantity, unit, customization || undefined);
+      alert('Produto adicionado ao carrinho!');
+    } catch (e) {
+      alert('Erro ao adicionar ao carrinho');
+    }
   };
 
   const handleShare = () => {

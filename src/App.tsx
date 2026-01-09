@@ -55,7 +55,6 @@ const App = () => (
             <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
             <Route path="/admin/carousel" element={<AdminCarousel />} />
             <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/collections" element={<AdminCollections />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />

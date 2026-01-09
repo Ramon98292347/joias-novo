@@ -24,7 +24,34 @@ export const adminData = {
   },
 
   async deleteProduct(id: string) {
-    // delete dependent rows first to satisfy FK constraints
+    const { data: images, error: imagesErr } = await supabase
+      .from("imagens_do_produto")
+      .select("id,bucket_name,storage_path")
+      .eq("product_id", id);
+    if (imagesErr) throw new Error(imagesErr.message);
+
+    if (Array.isArray(images) && images.length > 0) {
+      const byBucket: Record<string, string[]> = {};
+      for (const img of images as any[]) {
+        const bucket = img.bucket_name as string | null;
+        const path = img.storage_path as string | null;
+        if (bucket && path) {
+          if (!byBucket[bucket]) byBucket[bucket] = [];
+          byBucket[bucket].push(path);
+        }
+      }
+      for (const bucket of Object.keys(byBucket)) {
+        const paths = byBucket[bucket];
+        if (paths.length === 0) continue;
+        const { error: storageErr } = await supabase.storage
+          .from(bucket)
+          .remove(paths);
+        if (storageErr) {
+          console.warn("Falha ao remover imagens do storage:", storageErr.message);
+        }
+      }
+    }
+
     await supabase.from("inventário").delete().eq("product_id", id);
     await supabase.from("imagens_do_produto").delete().eq("product_id", id);
     await supabase.from("itens_do_carrossel").delete().eq("product_id", id);
@@ -191,7 +218,43 @@ export const adminData = {
   },
 
   async deleteProductImage(imageId: string) {
-    const { error } = await supabase.from("imagens_do_produto").delete().eq("id", imageId);
+    const { data: imageRow, error: findErr } = await supabase
+      .from("imagens_do_produto")
+      .select("id,bucket_name,storage_path")
+      .eq("id", imageId)
+      .single();
+    if (findErr) throw new Error(findErr.message);
+
+    if (imageRow?.bucket_name && imageRow?.storage_path) {
+      const { error: storageErr } = await supabase.storage
+        .from(imageRow.bucket_name)
+        .remove([imageRow.storage_path]);
+      // continua mesmo se storage falhar
+      if (storageErr) {
+        console.warn("Falha ao remover do storage:", storageErr.message);
+      }
+    }
+
+    const { error } = await supabase
+      .from("imagens_do_produto")
+      .delete()
+      .eq("id", imageId);
+    if (error) throw new Error(error.message);
+  },
+
+  async updateProductImage(imageId: string, payload: { url: string; bucket_name?: string | null; storage_path?: string | null; alt_text?: string | null; is_primary?: boolean | null; sort_order?: number | null }) {
+    const update: any = {
+      url: payload.url,
+      bucket_name: payload.bucket_name ?? null,
+      storage_path: payload.storage_path ?? null,
+      alt_text: payload.alt_text ?? null,
+      is_primary: payload.is_primary ?? null,
+      sort_order: payload.sort_order ?? null,
+    };
+    const { error } = await supabase
+      .from("imagens_do_produto")
+      .update(update)
+      .eq("id", imageId);
     if (error) throw new Error(error.message);
   },
 

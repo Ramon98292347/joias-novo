@@ -44,7 +44,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   const menuItems = [
     { path: '/admin/dashboard', icon: '📊', label: 'Dashboard', mobileLabel: 'Dashboard' },
     { path: '/admin/products', icon: '📦', label: 'Produtos', mobileLabel: 'Produtos' },
-    { path: '/admin/categories', icon: '🗂', label: 'Categorias', mobileLabel: 'Categorias' },
     { path: '/admin/collections', icon: '✨', label: 'Coleções', mobileLabel: 'Coleções' },
     { path: '/admin/carousel', icon: '🎞', label: 'Carrossel Novidades', mobileLabel: 'Carrossel' },
     { path: '/admin/users', icon: '👥', label: 'Usuários', mobileLabel: 'Usuários' },

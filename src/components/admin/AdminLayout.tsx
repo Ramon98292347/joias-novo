@@ -36,7 +36,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
     try {
       await adminAuth.signOut();
       navigate('/');
-    } catch {}
+    } catch {
+      return;
+    }
   };
 
   const menuItems = [
@@ -61,7 +63,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-900 flex overflow-x-hidden">
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-800 border-r border-slate-700 transform transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -111,7 +113,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex-1 flex flex-col lg:ml-0 min-w-0">
         {/* Topbar */}
         <header className="bg-slate-800 border-b border-slate-700 px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
@@ -146,7 +148,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden min-w-0">
           {children}
         </main>
       </div>

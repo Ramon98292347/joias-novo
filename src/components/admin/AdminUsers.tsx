@@ -217,10 +217,62 @@ const AdminUsers: React.FC = () => {
         </div>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-slate-800 rounded-lg border border-slate-700">
+      <div className="md:hidden space-y-3">
+        {users.map((user) => (
+          <div key={user.id} className="bg-slate-800 rounded-lg border border-slate-700 p-3">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+                <User className="h-5 w-5 text-slate-400" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{user.name}</div>
+                    <div className="text-xs text-slate-400 truncate mt-0.5">{user.email}</div>
+                    <div className="text-xs text-slate-500 mt-1">Criado em: {formatDate(user.created_at)}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+                      }`}
+                    >
+                      {user.role === 'admin' ? 'Admin' : 'Editor'}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        user.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                      }`}
+                    >
+                      {user.is_active ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="flex-1 px-3 py-2 rounded-lg bg-slate-700 text-amber-300 text-sm font-medium hover:bg-slate-600 transition-colors"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className="flex-1 px-3 py-2 rounded-lg bg-slate-700 text-red-300 text-sm font-medium hover:bg-slate-600 transition-colors"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block bg-slate-800 rounded-lg border border-slate-700">
         <div className="overflow-x-auto">
-          <table className="min-w-[600px] w-full">
+          <table className="w-full">
             <thead className="bg-slate-900">
               <tr>
                 <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
@@ -260,20 +312,20 @@ const AdminUsers: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
-                      user.role === 'admin' 
-                        ? 'bg-red-500/20 text-red-400' 
-                        : 'bg-blue-500/20 text-blue-400'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
+                        user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+                      }`}
+                    >
                       {user.role === 'admin' ? 'Admin' : 'Editor'}
                     </span>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
-                      user.is_active 
-                        ? 'bg-green-500/20 text-green-400' 
-                        : 'bg-gray-500/20 text-gray-400'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 rounded-full text-xs font-medium ${
+                        user.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                      }`}
+                    >
                       {user.is_active ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>

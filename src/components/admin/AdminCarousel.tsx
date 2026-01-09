@@ -303,7 +303,7 @@ const AdminCarousel: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between lg:justify-end space-x-2 sm:space-x-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:justify-end">
                       <button
                         onClick={() => handleToggleActive(index)}
                         className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
@@ -315,7 +315,7 @@ const AdminCarousel: React.FC = () => {
                         {item.is_active ? 'Ativo' : 'Inativo'}
                       </button>
                       
-                      <div className="flex space-x-1">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleReorder(index, index - 1)}
                           disabled={index === 0}

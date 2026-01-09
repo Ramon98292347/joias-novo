@@ -175,9 +175,23 @@ router.post('/register', registerValidation, async (req, res) => {
       return res.status(409).json({ error: 'Email já cadastrado' });
     }
 
+    // Cria usuário na autenticação (Supabase Auth)
+    const { data: authCreated, error: authErr } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { role, name }
+    });
+
+    if (authErr) {
+      return res.status(500).json({ error: 'Erro ao criar usuário na autenticação', details: authErr.message });
+    }
+
+    const authUserId = authCreated?.user?.id;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const insertPayload = {
+      id: authUserId || undefined,
       email,
       password: hashedPassword,
       name,
@@ -201,6 +215,7 @@ router.post('/register', registerValidation, async (req, res) => {
     res.status(201).json({
       message: 'Administrador criado com sucesso',
       user: created,
+      authUserId,
     });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao registrar usuário' });

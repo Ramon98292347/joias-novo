@@ -1,10 +1,12 @@
-import adminService from "@/services/adminService";
+import { supabase } from "@/lib/supabase";
+import { adminData } from "@/services/adminData";
 
 const MASTER = import.meta.env.VITE_ADMIN_MASTER_PASSWORD || "";
 
 export const adminAuth = {
   signIn: async (email: string, password: string) => {
-    const data = await adminService.login(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
     return data;
   },
 
@@ -12,16 +14,31 @@ export const adminAuth = {
     if (!MASTER || masterPassword !== MASTER) {
       throw new Error("Senha mestre inválida");
     }
-    const data = await adminService.register(email, password, masterPassword, "Administrador", "admin");
-    return data;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role: "admin", name: "Administrador" },
+      },
+    });
+    if (error) throw new Error(error.message);
+    // Autentica imediatamente após cadastro
+    const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (loginErr) throw new Error(loginErr.message);
+    // Sincroniza admin_users com o usuário atual
+    await adminData.ensureCurrentAdminUser();
+    return login;
   },
 
   getCurrentUser: async () => {
-    const resp = await adminService.getCurrentUser();
-    return resp.user;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData?.session || null;
+    if (!session) return null;
+    return session.user;
   },
 
   signOut: async () => {
-    await adminService.logout();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
   },
 };

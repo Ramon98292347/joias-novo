@@ -147,9 +147,10 @@ export const adminData = {
 
   async ensureCurrentAdminUser(): Promise<string | null> {
     try {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) return null;
-      const u = data.user as any;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session || null;
+      if (!session?.user) return null;
+      const u = session.user as any;
       const payload = {
         id: u.id,
         email: u.email,

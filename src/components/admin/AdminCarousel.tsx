@@ -44,7 +44,9 @@ const AdminCarousel: React.FC = () => {
     try {
       const cols = await fetchCollections();
       setCollections(cols || []);
-    } catch {}
+    } catch {
+      setCollections([]);
+    }
   };
 
   const loadCarouselItems = async () => {
@@ -52,7 +54,7 @@ const AdminCarousel: React.FC = () => {
       const rows = await adminData.listCarouselItems();
       // Enriquecer com dados do produto
       const ids = rows.map((r: any) => r.product_id).filter(Boolean);
-      let products: Record<string, Product> = {};
+      const products: Record<string, Product> = {};
       if (ids.length > 0) {
         const { products: found } = await fetchProducts({ page: 1, limit: 200 });
         for (const p of found) {

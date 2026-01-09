@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Image, AlertCircle } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import { fetchCollections } from '@/services/publicData';
+import { adminData } from '@/services/adminData';
+import { adminAuth } from '@/services/adminAuth';
 
 interface Collection {
   id: string;
@@ -132,9 +134,14 @@ const AdminCollections: React.FC = () => {
 
   const handleImageUpload = async (file: File) => {
     try {
+      const user = await adminAuth.getCurrentUser();
+      if (!user) {
+        setErrors({ general: 'Faça login para enviar imagem' });
+        return;
+      }
       const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'public-assets';
       const path = `collections/${formData.slug || Date.now()}/${Date.now()}-${file.name}`;
-      const { publicUrl } = await (await import('@/services/adminData')).adminData.uploadToStorage(bucket, path, file);
+      const { publicUrl } = await adminData.uploadToStorage(bucket, path, file);
       setFormData({ ...formData, image_url: publicUrl });
     } catch (e) {
       alert('Erro ao enviar imagem da coleção');
@@ -145,7 +152,9 @@ const AdminCollections: React.FC = () => {
     try {
       await adminData.upsertCollection(collection.id, { is_active: !collection.is_active });
       loadCollections();
-    } catch {}
+    } catch {
+      alert('Erro ao atualizar coleção');
+    }
   };
 
   if (loading) {

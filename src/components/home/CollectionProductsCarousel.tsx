@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductCard from "@/components/product/ProductCard";
@@ -55,18 +55,13 @@ const CollectionProductsCarousel = ({ collection }: { collection: CollectionInfo
 
   const maxIndex = Math.max(0, products.length - Math.floor(itemsPerView));
 
-  const nextSlide = useCallback(() => {
+  const nextSlide = () => {
     setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-  }, [maxIndex]);
+  };
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
   };
-
-  useEffect(() => {
-    const timer = setInterval(nextSlide, 4000);
-    return () => clearInterval(timer);
-  }, [nextSlide]);
 
   if (loading) {
     return (
@@ -99,11 +94,7 @@ const CollectionProductsCarousel = ({ collection }: { collection: CollectionInfo
           </div>
           <Link to={`/categoria/${collection.slug}`} className="text-primary hover:underline">Ver coleção</Link>
         </div>
-        <div
-          className="overflow-hidden"
-          onMouseEnter={() => {}}
-          onMouseLeave={() => {}}
-        >
+        <div className="overflow-hidden">
           <div
             className="flex transition-transform duration-500 ease-out"
             style={{ transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)` }}

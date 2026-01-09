@@ -63,7 +63,9 @@ export const cartService = {
     });
     try {
       window.dispatchEvent(new CustomEvent("cart:updated"));
-    } catch {}
+    } catch {
+      void 0;
+    }
   },
 
   async updateQuantity(itemId: string, quantity: number): Promise<void> {
@@ -80,14 +82,18 @@ export const cartService = {
       .eq("id", itemId);
     try {
       window.dispatchEvent(new CustomEvent("cart:updated"));
-    } catch {}
+    } catch {
+      void 0;
+    }
   },
 
   async removeItem(itemId: string): Promise<void> {
     await supabase.from("shopping_cart_items").delete().eq("id", itemId);
     try {
       window.dispatchEvent(new CustomEvent("cart:updated"));
-    } catch {}
+    } catch {
+      void 0;
+    }
   },
 
   async clearCart(): Promise<void> {
@@ -95,6 +101,8 @@ export const cartService = {
     await supabase.from("shopping_cart_items").delete().eq("cart_id", cid);
     try {
       window.dispatchEvent(new CustomEvent("cart:updated"));
-    } catch {}
+    } catch {
+      void 0;
+    }
   },
 };

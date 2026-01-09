@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { fetchCarouselItemsPublic, fetchProducts } from "@/services/publicData";
-import { supabase } from "@/lib/supabase";
 
 interface Product {
   id: string;
@@ -17,98 +16,56 @@ interface Product {
 }
 
 const ProductCarousel = () => {
-  console.log('🎯 ProductCarousel montado!');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carrega produtos da API
   useEffect(() => {
-    const loadProducts = async () => {
-      console.log('🔄 Iniciando carregamento de produtos...');
-      console.log('📊 Estado inicial - loading:', loading, 'products.length:', products.length);
-      
+    let cancelled = false;
+
+    const load = async () => {
       try {
-        console.log('📋 Buscando itens do carrossel...');
         const items = await fetchCarouselItemsPublic();
-        console.log('✅ Itens do carrossel:', items);
-        console.log('📊 Tipo dos itens:', typeof items, Array.isArray(items));
-        
-        let next = items.map((it) => it.product).filter(Boolean) as any[];
-        console.log('📦 Produtos do carrossel:', next);
-        console.log('📊 Tipo dos produtos:', typeof next, Array.isArray(next), 'length:', next.length);
-        
-        if (!Array.isArray(next) || next.length === 0) {
-          console.log('🔄 Tentando buscar produtos em destaque...');
-          const { products: alt } = await fetchProducts({ page: 1, limit: 10, featured: true });
-          console.log('✅ Produtos em destaque:', alt);
-          console.log('📊 Tipo dos produtos em destaque:', typeof alt, Array.isArray(alt));
-          next = Array.isArray(alt) ? alt : [];
+        const fromCarousel = items.map((it) => it.product).filter(Boolean) as Product[];
+
+        let next: Product[] = Array.isArray(fromCarousel) ? fromCarousel : [];
+
+        if (next.length === 0) {
+          const { products: featured } = await fetchProducts({ page: 1, limit: 10, featured: true });
+          next = Array.isArray(featured) ? (featured as Product[]) : [];
         }
-        
-        if (!Array.isArray(next) || next.length === 0) {
-          console.log('🔄 Tentando buscar diretamente do Supabase...');
-          console.log('🔗 Config Supabase URL:', supabase.supabaseUrl);
-          
-          const { data: raw, error: supabaseError } = await supabase
-            .from("products")
-            .select(
-              "id,name,price,promotional_price,is_new,category:categories(id,name,slug),images:imagens_do_produto(url,is_primary,sort_order)"
-            )
-            .eq("is_active", true)
-            .order("created_at", { ascending: false })
-            .range(0, 9);
-          
-          console.log('✅ Dados do Supabase:', raw);
-          console.log('📊 Tipo dos dados:', typeof raw, Array.isArray(raw));
-          console.log('❌ Erro do Supabase:', supabaseError);
-          
-          if (supabaseError) {
-            console.error('❌ Detalhes do erro Supabase:', supabaseError.message, supabaseError.code);
-          }
-          
-          next = (raw as any[]) || [];
-          console.log('📦 Produtos após Supabase:', next);
+
+        if (next.length === 0) {
+          const { products: isNew } = await fetchProducts({ page: 1, limit: 10, isNew: true });
+          next = Array.isArray(isNew) ? (isNew as Product[]) : [];
         }
-        
-        // Log detalhado dos produtos encontrados
-        console.log('🏁 Produtos finais:', next);
-        console.log('📊 Resumo final:', {
-          total: next.length,
-          temImagens: next.some(p => p.images?.length > 0),
-          exemplos: next.slice(0, 2).map(p => ({
-            id: p.id,
-            name: p.name,
-            images: p.images?.length || 0,
-            primeiraImagem: p.images?.[0]?.url || 'sem imagem'
-          }))
-        });
-        
-        setProducts(next as any[]);
-      } catch (error) {
-        console.error('❌ Erro no carregamento:', error);
-        console.error('❌ Stack do erro:', error instanceof Error ? error.stack : 'sem stack');
-        
-        try {
-          console.log('🔄 Tentando fallback com produtos novos...');
-          const { products: alt } = await fetchProducts({ page: 1, limit: 10, isNew: true });
-          console.log('✅ Produtos novos:', alt);
-          setProducts(Array.isArray(alt) ? alt : []);
-        } catch (fallbackError) {
-          console.error('❌ Erro no fallback:', fallbackError);
-          setProducts([]);
+
+        if (!cancelled) {
+          setProducts(next);
         }
+      } catch {
+        if (!cancelled) setProducts([]);
       } finally {
-        setLoading(false);
-        console.log('✅ Carregamento finalizado - loading:', false, 'products.length:', products.length);
+        if (!cancelled) setLoading(false);
       }
     };
-    
-    console.log('🚀 Iniciando loadProducts...');
-    loadProducts();
+
+    setLoading(true);
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    const maxIndex = Math.max(0, products.length - Math.floor(itemsPerView));
+    if (currentIndex > maxIndex) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, itemsPerView, products.length]);
 
   // Atualiza quantidade de itens por view baseado no tamanho da tela
   useEffect(() => {

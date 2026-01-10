@@ -158,19 +158,27 @@ const AdminProductForm: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const productData = {
-        ...formData,
+      const productPayload = {
+        name: formData.name,
+        description: formData.description,
+        category_id: formData.category_id,
+        collection_id: formData.collection_id || null,
+        material: formData.material,
         price: parseFloat(formData.price),
         promotional_price: formData.promotional_price ? parseFloat(formData.promotional_price) : null,
         stock: parseInt(formData.stock),
+        tags: formData.tags || [],
+        is_active: formData.is_active,
+        is_featured: formData.is_featured,
+        is_new: formData.is_new,
       };
 
-      const newId = await adminData.upsertProduct(isEditing ? id! : null, productData);
+      const newId = await adminData.upsertProduct(isEditing ? id! : null, productPayload);
 
       // Upload images if any
-      if (!isEditing && formData.images.length > 0) {
+      if (formData.images.length > 0) {
         const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'product-images';
-        const productId = newId as string;
+        const productId = (isEditing ? id! : (newId as string));
         for (let i = 0; i < formData.images.length; i++) {
           const file = formData.images[i];
           const folder = (collections.find((c) => c.id === formData.collection_id)?.slug) || `products/${productId}`;

@@ -41,6 +41,7 @@ const AdminProducts: React.FC = () => {
     is_new: false,
   });
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [currentImageInfo, setCurrentImageInfo] = useState<{ url?: string; storage_path?: string; bucket_name?: string } | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -113,6 +114,16 @@ const AdminProducts: React.FC = () => {
         is_featured: !!full.is_featured,
         is_new: !!full.is_new,
       });
+      try {
+        const { supabase } = await import('@/lib/supabase');
+        const { data: imgs } = await supabase
+          .from('imagens_do_produto')
+          .select('id,url,alt_text,is_primary,sort_order,storage_path,bucket_name')
+          .eq('product_id', full.id);
+        const arr = Array.isArray(imgs) ? imgs : [];
+        const primary = arr.find((i: any) => i?.is_primary) || arr[0];
+        setCurrentImageInfo(primary ? { url: primary.url, storage_path: primary.storage_path, bucket_name: primary.bucket_name } : null);
+      } catch {}
       setShowModal(true);
     } catch (e) {
       alert('Erro ao carregar produto para edição');
@@ -568,6 +579,13 @@ const AdminProducts: React.FC = () => {
                   className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-slate-900 hover:file:bg-amber-600"
                 />
                 <p className="text-xs text-slate-400 mt-2">Se selecionar um arquivo, a imagem atual será substituída no storage e na tabela.</p>
+                {currentImageInfo && (
+                  <div className="mt-2 space-y-1 text-xs text-slate-400">
+                    <div>URL atual: <span className="break-all">{currentImageInfo.url}</span></div>
+                    <div>Storage path: <span className="break-all">{currentImageInfo.storage_path || '-'}</span></div>
+                    <div>Bucket: {currentImageInfo.bucket_name || '-'}</div>
+                  </div>
+                )}
               </div>
             </form>
           </div>

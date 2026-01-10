@@ -299,31 +299,31 @@ const AdminProducts: React.FC = () => {
 
         <div className="hidden sm:block bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full table-fixed">
               <thead className="bg-slate-700">
                 <tr>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="w-16 sm:w-20 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Imagem
                   </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="w-40 md:w-56 lg:w-64 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="hidden md:table-cell md:w-44 lg:w-52 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Categoria
                   </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="w-24 sm:w-28 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Preço
                   </th>
-                  <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell sm:w-24 md:w-28 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Estoque
                   </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="w-28 sm:w-32 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell lg:w-28 xl:w-32 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Destaque
                   </th>
-                  <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th className="w-32 sm:w-40 px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -338,13 +338,13 @@ const AdminProducts: React.FC = () => {
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
                       />
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                      <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[140px] lg:max-w-none">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[160px] md:max-w-[200px] lg:max-w-[240px] xl:max-w-[320px]">
                         {product.name}
                       </div>
                       {product.is_new && <div className="text-xs text-green-400 mt-0.5 sm:mt-1">✨ Novidade</div>}
                     </td>
-                    <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
                       <div className="text-xs sm:text-sm text-slate-300">{product.category?.name || '-'}</div>
                     </td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">

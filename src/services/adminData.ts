@@ -40,6 +40,42 @@ export const adminData = {
     return data?.id;
   },
 
+  async deleteAllProductImagesByProduct(productId: string) {
+    const { data: images, error: imagesErr } = await supabase
+      .from("imagens_do_produto")
+      .select("id,bucket_name,storage_path")
+      .eq("product_id", productId);
+    if (imagesErr) throw new Error(imagesErr.message);
+
+    if (Array.isArray(images) && images.length > 0) {
+      const byBucket: Record<string, string[]> = {};
+      for (const img of images as any[]) {
+        const bucket = img.bucket_name as string | null;
+        const path = img.storage_path as string | null;
+        if (bucket && path) {
+          if (!byBucket[bucket]) byBucket[bucket] = [];
+          byBucket[bucket].push(path);
+        }
+      }
+      for (const bucket of Object.keys(byBucket)) {
+        const paths = byBucket[bucket];
+        if (paths.length === 0) continue;
+        const { error: storageErr } = await supabase.storage
+          .from(bucket)
+          .remove(paths);
+        if (storageErr) {
+          console.warn("Falha ao remover imagens do storage:", storageErr.message);
+        }
+      }
+    }
+
+    const { error } = await supabase
+      .from("imagens_do_produto")
+      .delete()
+      .eq("product_id", productId);
+    if (error) throw new Error(error.message);
+  },
+
   async deleteProduct(id: string) {
     const { data: images, error: imagesErr } = await supabase
       .from("imagens_do_produto")

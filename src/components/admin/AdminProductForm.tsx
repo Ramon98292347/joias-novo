@@ -175,10 +175,14 @@ const AdminProductForm: React.FC = () => {
 
       const newId = await adminData.upsertProduct(isEditing ? id! : null, productPayload);
 
-      // Upload images if any
+      // Upload/Substituição de imagens (se houver arquivos anexados)
       if (formData.images.length > 0) {
         const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'product-images';
         const productId = (isEditing ? id! : (newId as string));
+
+        if (isEditing) {
+          await adminData.deleteAllProductImagesByProduct(productId);
+        }
         for (let i = 0; i < formData.images.length; i++) {
           const file = formData.images[i];
           const folder = (collections.find((c) => c.id === formData.collection_id)?.slug) || `products/${productId}`;

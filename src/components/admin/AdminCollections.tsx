@@ -31,6 +31,7 @@ const AdminCollections: React.FC = () => {
     sort_order: 0,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadCollections();
@@ -82,6 +83,16 @@ const AdminCollections: React.FC = () => {
     try {
       const id = editingCollection ? editingCollection.id : null;
       await adminData.upsertCollection(id, formData);
+      
+      // Mostrar mensagem de sucesso e recarregar a página
+      const message = editingCollection ? 'Coleção atualizada com sucesso!' : 'Coleção criada com sucesso!';
+      setSuccessMessage(message);
+      
+      // Aguardar um momento para a mensagem ser vista e então recarregar
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+      
       setShowModal(false);
       setEditingCollection(null);
       resetForm();
@@ -170,6 +181,12 @@ const AdminCollections: React.FC = () => {
   return (
     <AdminLayout title="Coleções">
       <div className="space-y-6">
+        {/* Mensagem de sucesso */}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-600 border border-green-500 rounded-lg text-white">
+            {successMessage}
+          </div>
+        )}
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>

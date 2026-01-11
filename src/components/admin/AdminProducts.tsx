@@ -123,7 +123,9 @@ const AdminProducts: React.FC = () => {
         const arr = Array.isArray(imgs) ? imgs : [];
         const primary = arr.find((i: any) => i?.is_primary) || arr[0];
         setCurrentImageInfo(primary ? { url: primary.url, storage_path: primary.storage_path, bucket_name: primary.bucket_name } : null);
-      } catch {}
+      } catch (error) {
+        console.error('Erro ao carregar imagens do produto:', error);
+      }
       setShowModal(true);
     } catch (e) {
       alert('Erro ao carregar produto para edição');

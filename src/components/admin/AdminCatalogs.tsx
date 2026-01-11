@@ -30,6 +30,7 @@ const AdminCatalogs: React.FC = () => {
     is_active: true,
     sort_order: 0,
   });
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     loadCategories();
@@ -62,6 +63,16 @@ const AdminCatalogs: React.FC = () => {
     e.preventDefault();
     const id = editingCategory ? editingCategory.id : null;
     await adminData.upsertCategory(id, formData);
+    
+    // Mostrar mensagem de sucesso e recarregar a página
+    const message = editingCategory ? 'Catálogo atualizado com sucesso!' : 'Catálogo criado com sucesso!';
+    setSuccessMessage(message);
+    
+    // Aguardar um momento para a mensagem ser vista e então recarregar
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    
     setShowModal(false);
     setEditingCategory(null);
     resetForm();
@@ -159,6 +170,12 @@ const AdminCatalogs: React.FC = () => {
   return (
     <AdminLayout title="Catálogos">
       <div className="space-y-6">
+        {/* Mensagem de sucesso */}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-600 border border-green-500 rounded-lg text-white">
+            {successMessage}
+          </div>
+        )}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-white">Catálogos</h1>

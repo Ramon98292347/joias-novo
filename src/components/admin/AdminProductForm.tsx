@@ -48,6 +48,7 @@ const AdminProductForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [successMessage, setSuccessMessage] = useState('');
   const collectionSlug = collections.find((c) => c.id === formData.collection_id)?.slug || '';
 
   useEffect(() => {
@@ -199,7 +200,15 @@ const AdminProductForm: React.FC = () => {
         }
       }
 
-      navigate('/admin/products');
+      // Mostrar mensagem de sucesso e recarregar a página
+      const message = isEditing ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!';
+      setSuccessMessage(message);
+      
+      // Aguardar um momento para a mensagem ser vista e então recarregar
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+      
     } catch (error) {
       console.error('Error saving product:', error);
       alert('Erro ao salvar produto. Tente novamente.');
@@ -221,6 +230,12 @@ const AdminProductForm: React.FC = () => {
   return (
     <AdminLayout title={isEditing ? 'Editar Produto' : 'Novo Produto'}>
       <div className="max-w-4xl mx-auto">
+        {/* Mensagem de sucesso */}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-600 border border-green-500 rounded-lg text-white">
+            {successMessage}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">

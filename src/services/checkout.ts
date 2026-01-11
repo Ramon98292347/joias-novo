@@ -5,6 +5,7 @@ export type CustomerInfo = {
   name: string;
   email: string;
   phone: string;
+  paymentMethod: string;
 };
 
 type OrderInsert = {
@@ -15,6 +16,7 @@ type OrderInsert = {
   total_amount: number;
   payment_status?: string;
   order_status?: string;
+  payment_method?: string;
   notes?: string | null;
 };
 
@@ -44,6 +46,7 @@ export const checkoutService = {
       total_amount: Number(total.toFixed(2)),
       payment_status: "pending",
       order_status: "pending",
+      payment_method: customer.paymentMethod,
       notes: null,
     };
 
@@ -76,6 +79,7 @@ export const checkoutService = {
         name: customer.name,
         email: customer.email,
         phone: customer.phone,
+        paymentMethod: customer.paymentMethod,
       },
       items: items.map((it) => ({
         product_id: it.product_id,

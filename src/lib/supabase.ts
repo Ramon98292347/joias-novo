@@ -11,6 +11,24 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
   const timeoutMs = 15000;
   const controller = new AbortController();
   const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => controller.abort(), timeoutMs);
+  const debugEnabled = !!import.meta.env.DEV;
+  const startedAt = Date.now();
+
+  const safeUrl = (() => {
+    try {
+      if (typeof input === "string") return input;
+      if (input instanceof URL) return input.toString();
+      if (input instanceof Request) return input.url;
+      return String(input);
+    } catch {
+      return "<url-indisponivel>";
+    }
+  })();
+
+  const method = (init?.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
+  if (debugEnabled) {
+    console.debug("[supabase:fetch] start", { method, url: safeUrl });
+  }
 
   try {
     const mergedInit: RequestInit = { ...(init || {}) };
@@ -22,7 +40,27 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
       delete mergedInit.signal;
     }
 
-    return await fetch(input, { ...mergedInit, signal: controller.signal });
+    const res = await fetch(input, { ...mergedInit, signal: controller.signal });
+    if (debugEnabled) {
+      console.debug("[supabase:fetch] ok", {
+        method,
+        url: safeUrl,
+        status: res.status,
+        ms: Date.now() - startedAt,
+      });
+    }
+    return res;
+  } catch (error: any) {
+    if (debugEnabled) {
+      console.error("[supabase:fetch] erro", {
+        method,
+        url: safeUrl,
+        ms: Date.now() - startedAt,
+        name: error?.name,
+        message: error?.message,
+      });
+    }
+    throw error;
   } finally {
     clearTimeout(timeoutId);
   }

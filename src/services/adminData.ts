@@ -1,18 +1,36 @@
 import { supabase } from "@/lib/supabase";
 
+const adminDataDebugEnabled = !!import.meta.env.DEV;
+
+function adminDataLog(level: "debug" | "info" | "warn" | "error", message: string, data?: unknown) {
+  if (!adminDataDebugEnabled) return;
+  const prefix = "[adminData]";
+  if (data === undefined) {
+    console[level](`${prefix} ${message}`);
+    return;
+  }
+  console[level](`${prefix} ${message}`, data);
+}
+
 export const adminData = {
   // Products
   async getProduct(id: string) {
+    adminDataLog("debug", "getProduct:start", { id });
     const { data, error } = await supabase
       .from("products")
       .select("*")
       .eq("id", id)
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      adminDataLog("error", "getProduct:error", { id, message: error.message });
+      throw new Error(error.message);
+    }
+    adminDataLog("debug", "getProduct:ok", { id });
     return data;
   },
 
   async upsertProduct(id: string | null, payload: any) {
+    adminDataLog("info", "upsertProduct:start", { id, hasId: !!id });
     const sanitized: any = {
       name: payload?.name,
       description: payload?.description ?? null,
@@ -31,21 +49,38 @@ export const adminData = {
 
     if (id) {
       const { error } = await supabase.from("products").update(sanitized).eq("id", id);
-      if (error) throw new Error(error.message);
+      if (error) {
+        adminDataLog("error", "upsertProduct:update:error", { id, message: error.message });
+        throw new Error(error.message);
+      }
+      adminDataLog("info", "upsertProduct:update:ok", { id });
       return id;
     }
     const insertRow = { ...sanitized, created_at: new Date().toISOString() };
     const { data, error } = await supabase.from("products").insert(insertRow).select("id").single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      adminDataLog("error", "upsertProduct:insert:error", { message: error.message });
+      throw new Error(error.message);
+    }
+    adminDataLog("info", "upsertProduct:insert:ok", { id: data?.id });
     return data?.id;
   },
 
   async deleteAllProductImagesByProduct(productId: string) {
+    adminDataLog("info", "deleteAllProductImagesByProduct:start", { productId });
     const { data: images, error: imagesErr } = await supabase
       .from("imagens_do_produto")
       .select("id,bucket_name,storage_path")
       .eq("product_id", productId);
-    if (imagesErr) throw new Error(imagesErr.message);
+    if (imagesErr) {
+      adminDataLog("error", "deleteAllProductImagesByProduct:list:error", { productId, message: imagesErr.message });
+      throw new Error(imagesErr.message);
+    }
+
+    adminDataLog("debug", "deleteAllProductImagesByProduct:list:ok", {
+      productId,
+      count: Array.isArray(images) ? images.length : 0,
+    });
 
     if (Array.isArray(images) && images.length > 0) {
       const byBucket: Record<string, string[]> = {};
@@ -60,11 +95,23 @@ export const adminData = {
       for (const bucket of Object.keys(byBucket)) {
         const paths = byBucket[bucket];
         if (paths.length === 0) continue;
+        adminDataLog("debug", "deleteAllProductImagesByProduct:storage:remove:start", {
+          productId,
+          bucket,
+          count: paths.length,
+        });
         const { error: storageErr } = await supabase.storage
           .from(bucket)
           .remove(paths);
         if (storageErr) {
           console.warn("Falha ao remover imagens do storage:", storageErr.message);
+          adminDataLog("warn", "deleteAllProductImagesByProduct:storage:remove:error", {
+            productId,
+            bucket,
+            message: storageErr.message,
+          });
+        } else {
+          adminDataLog("debug", "deleteAllProductImagesByProduct:storage:remove:ok", { productId, bucket });
         }
       }
     }
@@ -73,7 +120,11 @@ export const adminData = {
       .from("imagens_do_produto")
       .delete()
       .eq("product_id", productId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      adminDataLog("error", "deleteAllProductImagesByProduct:db:delete:error", { productId, message: error.message });
+      throw new Error(error.message);
+    }
+    adminDataLog("info", "deleteAllProductImagesByProduct:ok", { productId });
   },
 
   async deleteProduct(id: string) {
@@ -250,13 +301,31 @@ export const adminData = {
   },
 
   async uploadToStorage(bucket: string, path: string, file: File): Promise<{ publicUrl: string; storagePath: string }> {
+    adminDataLog("info", "uploadToStorage:start", {
+      bucket,
+      path,
+      fileName: file?.name,
+      fileSize: typeof file?.size === "number" ? file.size : undefined,
+      fileType: file?.type,
+    });
     const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
-    if (error) throw new Error(error.message);
+    if (error) {
+      adminDataLog("error", "uploadToStorage:error", { bucket, path, message: error.message });
+      throw new Error(error.message);
+    }
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    adminDataLog("info", "uploadToStorage:ok", { bucket, path });
     return { publicUrl: data.publicUrl, storagePath: path };
   },
 
   async addProductImage(productId: string, payload: { url: string; alt_text?: string | null; is_primary?: boolean | null; sort_order?: number | null; bucket_name?: string | null; storage_path?: string | null }) {
+    adminDataLog("debug", "addProductImage:start", {
+      productId,
+      is_primary: payload?.is_primary ?? null,
+      sort_order: payload?.sort_order ?? null,
+      bucket_name: payload?.bucket_name ?? null,
+      storage_path: payload?.storage_path ?? null,
+    });
     const insert: any = {
       product_id: productId,
       url: payload.url,
@@ -267,7 +336,11 @@ export const adminData = {
       storage_path: payload.storage_path ?? null,
     };
     const { error } = await supabase.from("imagens_do_produto").insert(insert);
-    if (error) throw new Error(error.message);
+    if (error) {
+      adminDataLog("error", "addProductImage:error", { productId, message: error.message });
+      throw new Error(error.message);
+    }
+    adminDataLog("debug", "addProductImage:ok", { productId });
   },
 
   async deleteProductImage(imageId: string) {

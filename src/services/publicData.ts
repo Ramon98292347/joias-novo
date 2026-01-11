@@ -1,6 +1,16 @@
 import { supabase } from "@/lib/supabase";
 const __cache: Record<string, { ts: number; data: any }> = {};
 const __ttl = 5 * 60 * 1000;
+const publicDataDebugEnabled = !!import.meta.env.DEV;
+const publicDataLog = (level: "debug" | "info" | "warn" | "error", message: string, data?: unknown) => {
+  if (!publicDataDebugEnabled) return;
+  const prefix = "[publicData]";
+  if (data === undefined) {
+    console[level](`${prefix} ${message}`);
+    return;
+  }
+  console[level](`${prefix} ${message}`, data);
+};
 const __get = (k: string) => {
   const v = __cache[k];
   if (!v) return null;
@@ -100,7 +110,7 @@ export const fetchProducts = async (params: {
   isNew?: boolean;
   active?: boolean;
   includeInactive?: boolean;
-}): Promise<{ products: Product[]; total: number }> => {
+}, opts?: { signal?: AbortSignal }): Promise<{ products: Product[]; total: number }> => {
   const { page = 1, limit = 20, category, collection, search, featured, isNew, active, includeInactive } = params;
   const offset = (page - 1) * limit;
 
@@ -126,11 +136,38 @@ export const fetchProducts = async (params: {
   const cached = __get(ck);
   if (cached) return cached as { products: Product[]; total: number };
   const selectClause = `*,category:categories(id,name,slug,description),collection:coleções(id,name,slug,description),images:imagens_do_produto(id,url,alt_text,sort_order,is_primary,storage_path,bucket_name)`;
-  const { data, error, count } = await tryQuery(selectClause);
-  if (error) return { products: [], total: 0 };
-  const result = { products: (data as any) || [], total: count || 0 };
-  __set(ck, result);
-  return result;
+  const opId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  publicDataLog("debug", "fetchProducts:start", { opId, page, limit, offset, ck });
+  const pendingLog = window.setTimeout(() => {
+    publicDataLog("warn", "fetchProducts:pendente", { opId, waitedMs: 15000, page, limit, offset });
+  }, 15000);
+  try {
+    const supabasePromise = tryQuery(selectClause);
+    const abortPromise = new Promise<never>((_, reject) => {
+      if (opts?.signal) {
+        if (opts.signal.aborted) {
+          reject(new DOMException("The operation was aborted.", "AbortError"));
+        } else {
+          opts.signal.addEventListener("abort", () => reject(new DOMException("The operation was aborted.", "AbortError")), { once: true });
+        }
+      }
+    });
+
+    const { data, error, count } = await Promise.race([supabasePromise, abortPromise]);
+    if (error) {
+      publicDataLog("error", "fetchProducts:error", { opId, message: error.message, details: error.details, hint: error.hint, code: error.code });
+      return { products: [], total: 0 };
+    }
+    const result = { products: (data as any) || [], total: count || 0 };
+    __set(ck, result);
+    publicDataLog("debug", "fetchProducts:ok", { opId, total: result.total, count: result.products.length });
+    return result;
+  } catch (error: any) {
+    publicDataLog("error", "fetchProducts:exception", { opId, name: error?.name, message: error?.message });
+    return { products: [], total: 0 };
+  } finally {
+    window.clearTimeout(pendingLog);
+  }
 };
 
 export type CarouselItem = {

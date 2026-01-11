@@ -289,8 +289,8 @@ const AdminCarousel: React.FC = () => {
                     <div className="flex items-center space-x-3 sm:space-x-4">
                       <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={getPrimaryImage(item.product)}
-                          alt={item.product.name}
+                          src={getPrimaryImage(item.product || ({} as any)) || '/placeholder-product.jpg'}
+                          alt={item.product?.name || 'Produto'}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.currentTarget.src = '/placeholder-product.jpg';
@@ -298,9 +298,9 @@ const AdminCarousel: React.FC = () => {
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-white font-medium text-sm sm:text-base truncate">{item.product.name}</h4>
+                        <h4 className="text-white font-medium text-sm sm:text-base truncate">{item.product?.name || 'Produto'}</h4>
                         <p className="text-slate-400 text-xs sm:text-sm">
-                          {formatCurrency(item.product.promotional_price || item.product.price)}
+                          {formatCurrency((item.product?.promotional_price ?? item.product?.price ?? 0))}
                         </p>
                       </div>
                     </div>

@@ -22,6 +22,7 @@ const AdminCollections: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -81,24 +82,24 @@ const AdminCollections: React.FC = () => {
     }
 
     try {
+      setIsSaving(true);
       const id = editingCollection ? editingCollection.id : null;
-      await adminData.upsertCollection(id, formData);
-      
-      // Mostrar mensagem de sucesso e recarregar a página
+      const saved = await adminData.upsertCollection(id, formData);
       const message = editingCollection ? 'Coleção atualizada com sucesso!' : 'Coleção criada com sucesso!';
       setSuccessMessage(message);
-      
-      // Aguardar um momento para a mensagem ser vista e então recarregar
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-      
+      if (editingCollection) {
+        setCollections((prev) => prev.map((c) => (c.id === editingCollection.id ? { ...c, ...formData } as any : c)));
+      } else {
+        const newCol = { ...(saved || {}), ...formData } as any;
+        setCollections((prev) => [newCol, ...prev]);
+      }
       setShowModal(false);
       setEditingCollection(null);
       resetForm();
-      loadCollections();
     } catch (error: any) {
       setErrors({ general: error.message || 'Erro ao salvar coleção' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -119,7 +120,8 @@ const AdminCollections: React.FC = () => {
     if (!window.confirm('Tem certeza que deseja excluir esta coleção?')) return;
     try {
       await adminData.deleteCollection(collectionId);
-      loadCollections();
+      setCollections((prev) => prev.filter((c) => c.id !== collectionId));
+      setSuccessMessage('Coleção excluída com sucesso!');
     } catch {
       alert('Erro ao excluir coleção');
     }
@@ -161,8 +163,9 @@ const AdminCollections: React.FC = () => {
 
   const toggleStatus = async (collection: Collection) => {
     try {
-      await adminData.upsertCollection(collection.id, { is_active: !collection.is_active });
-      loadCollections();
+      const newStatus = !collection.is_active;
+      await adminData.upsertCollection(collection.id, { is_active: newStatus });
+      setCollections((prev) => prev.map((c) => (c.id === collection.id ? { ...c, is_active: newStatus } : c)));
     } catch {
       alert('Erro ao atualizar coleção');
     }
@@ -404,9 +407,10 @@ const AdminCollections: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-medium transition-colors"
+                    disabled={isSaving}
+                    className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 rounded-lg font-medium transition-colors"
                   >
-                    {editingCollection ? 'Atualizar' : 'Criar'}
+                    {isSaving ? 'Salvando...' : editingCollection ? 'Atualizar' : 'Criar'}
                   </button>
                 </div>
               </form>

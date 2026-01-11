@@ -201,9 +201,19 @@ router.post('/', productValidation, async (req, res) => {
 router.put('/:id', productValidation, async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('[products:update] start', {
+      productId: id,
+      userId: req.user?.id,
+      bodyKeys: req.body ? Object.keys(req.body) : [],
+    });
     const errors = validationResult(req);
     
     if (!errors.isEmpty()) {
+      console.warn('[products:update] validation_error', {
+        productId: id,
+        userId: req.user?.id,
+        details: errors.array(),
+      });
       return res.status(400).json({ 
         error: 'Dados inválidos', 
         details: errors.array() 
@@ -218,6 +228,7 @@ router.put('/:id', productValidation, async (req, res) => {
       .single();
 
     if (!oldProduct) {
+      console.warn('[products:update] not_found', { productId: id, userId: req.user?.id });
       return res.status(404).json({ error: 'Produto não encontrado' });
     }
 
@@ -235,6 +246,11 @@ router.put('/:id', productValidation, async (req, res) => {
     });
 
     updateData.updated_at = new Date();
+    console.log('[products:update] update_payload', {
+      productId: id,
+      userId: req.user?.id,
+      updateKeys: Object.keys(updateData),
+    });
 
     const { data: product, error } = await supabase
       .from('products')
@@ -244,12 +260,14 @@ router.put('/:id', productValidation, async (req, res) => {
       .single();
 
     if (error) {
+      console.error('[products:update] supabase_error', { productId: id, userId: req.user?.id, error });
       return res.status(500).json({ error: 'Erro ao atualizar produto' });
     }
 
     // Log the action
     await logAction(req.user.id, 'update_product', 'products', id, oldProduct, product);
 
+    console.log('[products:update] ok', { productId: id, userId: req.user?.id });
     res.json({
       message: 'Produto atualizado com sucesso',
       product

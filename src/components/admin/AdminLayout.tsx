@@ -22,7 +22,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   const loadUserData = async () => {
     try {
       const userData = await adminAuth.getCurrentUser();
-      await adminData.ensureCurrentAdminUser();
       setUser(userData);
       if (!userData) navigate('/admin/login');
     } catch (error) {

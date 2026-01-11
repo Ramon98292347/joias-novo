@@ -36,7 +36,7 @@ export const checkoutService = {
   async finalizeOrder(customer: CustomerInfo): Promise<{ order_id: string; order_number: string }> {
     const items: CartItem[] = await cartService.listItems();
     const total = items.reduce((sum, it) => sum + (it.total_price || 0), 0);
-    const orderNumber = `RAV-${Date.now()}`;
+    const orderNumber = `RAV-${crypto.randomUUID()}`;
 
     const orderPayload: OrderInsert = {
       order_number: orderNumber,
@@ -69,7 +69,12 @@ export const checkoutService = {
       subtotal: it.total_price,
     }));
 
-    await tryInsertOrderItems("itens_do_pedido", orderItemsPayload);
+    try {
+      await tryInsertOrderItems("itens_do_pedido", orderItemsPayload);
+    } catch (e) {
+      await supabase.from("pedidos").delete().eq("id", orderId);
+      throw e;
+    }
 
     const payload = {
       order_id: orderId,

@@ -25,6 +25,17 @@ const AdminProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditing = !!id;
+  const adminProductFormDebugEnabled = !!import.meta.env.DEV;
+
+  const adminProductFormLog = (level: "debug" | "info" | "warn" | "error", message: string, data?: unknown) => {
+    if (!adminProductFormDebugEnabled) return;
+    const prefix = "[AdminProductForm]";
+    if (data === undefined) {
+      console[level](`${prefix} ${message}`);
+      return;
+    }
+    console[level](`${prefix} ${message}`, data);
+  };
 
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
@@ -159,6 +170,7 @@ const AdminProductForm: React.FC = () => {
     setSubmitting(true);
 
     try {
+      const opId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const productPayload = {
         name: formData.name,
         description: formData.description,
@@ -174,43 +186,105 @@ const AdminProductForm: React.FC = () => {
         is_new: formData.is_new,
       };
 
-      const newId = await adminData.upsertProduct(isEditing ? id! : null, productPayload);
+      adminProductFormLog("info", "salvar:start", {
+        opId,
+        isEditing,
+        id: isEditing ? id : null,
+        hasImages: formData.images.length > 0,
+        imagesCount: formData.images.length,
+        category_id: formData.category_id,
+        collection_id: formData.collection_id || null,
+      });
+
+      const upsertPendingLog = window.setTimeout(() => {
+        adminProductFormLog("warn", "salvar:upsert:pendente", { opId, waitedMs: 15000 });
+      }, 15000);
+      let newId: string;
+      try {
+        newId = await adminData.upsertProduct(isEditing ? id! : null, productPayload);
+      } finally {
+        window.clearTimeout(upsertPendingLog);
+      }
+      adminProductFormLog("info", "salvar:upsert:ok", { opId, productId: isEditing ? id : newId });
 
       // Upload/Substituição de imagens (se houver arquivos anexados)
       if (formData.images.length > 0) {
         const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'product-images';
         const productId = (isEditing ? id! : (newId as string));
+        adminProductFormLog("info", "salvar:imagens:start", {
+          opId,
+          productId,
+          bucket,
+          count: formData.images.length,
+        });
 
         if (isEditing) {
-          await adminData.deleteAllProductImagesByProduct(productId);
+          const deletePendingLog = window.setTimeout(() => {
+            adminProductFormLog("warn", "salvar:imagens:deleteAll:pendente", { opId, productId, waitedMs: 15000 });
+          }, 15000);
+          try {
+            await adminData.deleteAllProductImagesByProduct(productId);
+          } finally {
+            window.clearTimeout(deletePendingLog);
+          }
+          adminProductFormLog("info", "salvar:imagens:deleteAll:ok", { opId, productId });
         }
         for (let i = 0; i < formData.images.length; i++) {
           const file = formData.images[i];
           const folder = (collections.find((c) => c.id === formData.collection_id)?.slug) || `products/${productId}`;
           const path = `${folder}/${Date.now()}-${file.name}`;
-          const { publicUrl, storagePath } = await adminData.uploadToStorage(bucket, path, file);
-          await adminData.addProductImage(productId, {
-            url: publicUrl,
-            alt_text: file.name,
-            is_primary: i === 0,
-            sort_order: i,
-            bucket_name: bucket,
-            storage_path: storagePath,
+          adminProductFormLog("debug", "salvar:imagens:arquivo", {
+            opId,
+            productId,
+            index: i,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            path,
           });
+
+          const uploadPendingLog = window.setTimeout(() => {
+            adminProductFormLog("warn", "salvar:imagens:upload:pendente", { opId, productId, waitedMs: 15000, path });
+          }, 15000);
+          let uploaded: { publicUrl: string; storagePath: string };
+          try {
+            uploaded = await adminData.uploadToStorage(bucket, path, file);
+          } finally {
+            window.clearTimeout(uploadPendingLog);
+          }
+          const { publicUrl, storagePath } = uploaded;
+
+          const addPendingLog = window.setTimeout(() => {
+            adminProductFormLog("warn", "salvar:imagens:add:pendente", { opId, productId, waitedMs: 15000 });
+          }, 15000);
+          try {
+            await adminData.addProductImage(productId, {
+              url: publicUrl,
+              alt_text: file.name,
+              is_primary: i === 0,
+              sort_order: i,
+              bucket_name: bucket,
+              storage_path: storagePath,
+            });
+          } finally {
+            window.clearTimeout(addPendingLog);
+          }
+          adminProductFormLog("debug", "salvar:imagens:add:ok", { opId, productId, index: i, storagePath });
         }
+        adminProductFormLog("info", "salvar:imagens:ok", { opId, productId });
       }
 
       // Mostrar mensagem de sucesso e recarregar a página
       const message = isEditing ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!';
       setSuccessMessage(message);
       
-      // Aguardar um momento para a mensagem ser vista e então recarregar
+      // Aguardar um momento para a mensagem ser vista e então navegar
       setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+        navigate('/admin/products');
+      }, 800);
       
     } catch (error) {
-      console.error('Erro ao salvar produto:', error);
+      console.error('[AdminProductForm] Erro ao salvar produto:', error);
       alert('Erro ao salvar produto. Tente novamente.');
     } finally {
       setSubmitting(false);

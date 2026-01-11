@@ -22,6 +22,7 @@ const AdminCatalogs: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -62,21 +63,25 @@ const AdminCatalogs: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = editingCategory ? editingCategory.id : null;
-    await adminData.upsertCategory(id, formData);
-    
-    // Mostrar mensagem de sucesso e recarregar a página
-    const message = editingCategory ? 'Catálogo atualizado com sucesso!' : 'Catálogo criado com sucesso!';
-    setSuccessMessage(message);
-    
-    // Aguardar um momento para a mensagem ser vista e então recarregar
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-    
-    setShowModal(false);
-    setEditingCategory(null);
-    resetForm();
-    loadCategories();
+    try {
+      setIsSaving(true);
+      const saved = await adminData.upsertCategory(id, formData);
+      const message = editingCategory ? 'Catálogo atualizado com sucesso!' : 'Catálogo criado com sucesso!';
+      setSuccessMessage(message);
+      if (editingCategory) {
+        setCategories((prev) => prev.map((c) => (c.id === editingCategory.id ? { ...c, ...formData } as any : c)));
+      } else {
+        const newCat = { ...(saved || {}), ...formData } as any;
+        setCategories((prev) => [newCat, ...prev]);
+      }
+      setShowModal(false);
+      setEditingCategory(null);
+      resetForm();
+    } catch (e) {
+      alert('Erro ao salvar catálogo');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleEdit = (category: Category) => {
@@ -94,8 +99,13 @@ const AdminCatalogs: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Tem certeza que deseja excluir este catálogo?")) return;
-    await adminData.deleteCategory(id);
-    loadCategories();
+    try {
+      await adminData.deleteCategory(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      setSuccessMessage('Catálogo excluído com sucesso!');
+    } catch (e) {
+      alert('Erro ao excluir catálogo');
+    }
   };
 
   const resetForm = () => {
@@ -333,8 +343,8 @@ const AdminCatalogs: React.FC = () => {
                   <button type="button" onClick={closeModal} className="flex-1 px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 transition-colors">
                     Cancelar
                   </button>
-                  <button type="submit" className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-medium transition-colors">
-                    {editingCategory ? "Atualizar" : "Criar"}
+                  <button type="submit" disabled={isSaving} className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-70 disabled:cursor-not-allowed text-slate-900 rounded-lg font-medium transition-colors">
+                    {isSaving ? 'Salvando...' : editingCategory ? "Atualizar" : "Criar"}
                   </button>
                 </div>
               </form>

@@ -30,22 +30,31 @@ export const cartService = {
   },
 
   async listItems(): Promise<CartItem[]> {
-    const cid = this.getCartId();
+    let cid = this.getCartId();
     const attempts: string[] = [
       `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price,images:imagens_do_produto(url,is_primary,sort_order))`,
       `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price,images:product_images(url,is_primary,sort_order))`,
       `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price)`
     ];
 
-    for (const selectClause of attempts) {
-      const { data, error } = await supabase
-        .from("shopping_cart_items")
-        .select(selectClause)
-        .eq("cart_id", cid)
-        .order("created_at", { ascending: true });
+    const tryFetch = async (cartId: string) => {
+      for (const selectClause of attempts) {
+        const { data, error } = await supabase
+          .from("shopping_cart_items")
+          .select(selectClause)
+          .eq("cart_id", cartId)
+          .order("created_at", { ascending: true });
+        if (!error) return (data as any) || [];
+      }
+      return null;
+    };
 
-      if (!error) return (data as any) || [];
-    }
+    const first = await tryFetch(cid);
+    if (first) return first;
+    cid = crypto.randomUUID();
+    localStorage.setItem("cart_id", cid);
+    const second = await tryFetch(cid);
+    if (second) return second;
 
     return [];
   },

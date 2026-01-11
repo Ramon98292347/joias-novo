@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { fetchProducts, fetchCategories, fetchCollections } from '@/services/publicData';
 import { adminData } from '@/services/adminData';
 import OptimizedImage from '@/components/OptimizedImage';
+import { useAuth } from '@/context/AuthProvider';
 
 interface Product {
   id: string;
@@ -21,6 +22,7 @@ interface Product {
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [collectionFilter, setCollectionFilter] = useState('all');
@@ -44,29 +46,70 @@ const AdminProducts: React.FC = () => {
   });
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [currentImageInfo, setCurrentImageInfo] = useState<{ url?: string; storage_path?: string; bucket_name?: string } | null>(null);
+  const adminProductsDebugEnabled = !!import.meta.env.DEV;
+  const listAbortRef = useRef<AbortController | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const { authReady, session } = useAuth();
+
+  const adminProductsLog = (level: "debug" | "info" | "warn" | "error", message: string, data?: unknown) => {
+    if (!adminProductsDebugEnabled) return;
+    const prefix = "[AdminProducts]";
+    if (data === undefined) {
+      console[level](`${prefix} ${message}`);
+      return;
+    }
+    console[level](`${prefix} ${message}`, data);
+  };
 
   useEffect(() => {
-    loadProducts();
     loadCategories();
     loadCollections();
-  }, [searchTerm, categoryFilter, collectionFilter, statusFilter]);
+    return () => {
+      listAbortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!authReady) return;
+    if (!session) return;
+    loadProducts();
+  }, [authReady, session, searchTerm, categoryFilter, collectionFilter, statusFilter, page, limit]);
 
   const loadProducts = async () => {
+    const opId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const params: any = {
+      search: searchTerm || undefined,
+      category: categoryFilter !== 'all' ? categoryFilter : undefined,
+      collection: collectionFilter !== 'all' ? collectionFilter : undefined,
+      featured: statusFilter === 'featured' ? true : undefined,
+      isNew: statusFilter === 'new' ? true : undefined,
+      active: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+      includeInactive: true,
+      page,
+      limit,
+    };
     try {
       setLoading(true);
-      const params: any = {
-        search: searchTerm || undefined,
-        category: categoryFilter !== 'all' ? categoryFilter : undefined,
-        collection: collectionFilter !== 'all' ? collectionFilter : undefined,
-        featured: statusFilter === 'featured' ? true : undefined,
-        isNew: statusFilter === 'new' ? true : undefined,
-        active: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
-        includeInactive: true,
-      };
-      const { products } = await fetchProducts({ page: 1, limit: 200, ...params });
-      setProducts(products || []);
+      adminProductsLog("debug", "loadProducts:start", { opId, params });
+      if (listAbortRef.current) {
+        adminProductsLog("debug", "loadProducts:abort_previous", { opId });
+        listAbortRef.current.abort();
+      }
+      listAbortRef.current = new AbortController();
+      const pendingLog = window.setTimeout(() => {
+        adminProductsLog("warn", "loadProducts:pendente", { opId, waitedMs: 15000, params });
+      }, 15000);
+      try {
+        const { products } = await fetchProducts(params, { signal: listAbortRef.current.signal });
+        setProducts(products || []);
+        adminProductsLog("debug", "loadProducts:ok", { opId, count: (products || []).length });
+      } finally {
+        window.clearTimeout(pendingLog);
+      }
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
+      adminProductsLog("error", "loadProducts:error", { opId, error });
     } finally {
       setLoading(false);
     }
@@ -184,40 +227,120 @@ const AdminProducts: React.FC = () => {
     e.preventDefault();
     if (!editingProduct) return;
     try {
-      await adminData.upsertProduct(editingProduct.id, {
-        name: formData.name,
-        description: formData.description,
-        category_id: formData.category_id || null,
+      setIsSaving(true);
+      const opId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const productId = editingProduct.id as string;
+      adminProductsLog("info", "salvar:start", {
+        opId,
+        productId,
+        hasNewImage: !!newImageFile,
         collection_id: formData.collection_id || null,
-        material: formData.material,
-        price: parseFloat(formData.price || '0'),
-        promotional_price: formData.promotional_price ? parseFloat(formData.promotional_price) : null,
-        stock: parseInt(formData.stock || '0'),
-        is_active: !!formData.is_active,
-        is_featured: !!formData.is_featured,
-        is_new: !!formData.is_new,
+        category_id: formData.category_id || null,
       });
 
+      const upsertPendingLog = window.setTimeout(() => {
+        adminProductsLog("warn", "salvar:upsert:pendente", { opId, productId, waitedMs: 15000 });
+      }, 15000);
+      try {
+        await adminData.upsertProduct(editingProduct.id, {
+          name: formData.name,
+          description: formData.description,
+          category_id: formData.category_id || null,
+          collection_id: formData.collection_id || null,
+          material: formData.material,
+          price: parseFloat(formData.price || '0'),
+          promotional_price: formData.promotional_price ? parseFloat(formData.promotional_price) : null,
+          stock: parseInt(formData.stock || '0'),
+          is_active: !!formData.is_active,
+          is_featured: !!formData.is_featured,
+          is_new: !!formData.is_new,
+        });
+      } finally {
+        window.clearTimeout(upsertPendingLog);
+      }
+      adminProductsLog("info", "salvar:upsert:ok", { opId, productId });
+
+      let newPrimaryImageUrl: string | null = null;
       if (newImageFile) {
-        const productId = editingProduct.id as string;
         const bucket = import.meta.env.VITE_STORAGE_BUCKET || 'product-images';
         const folder = editingProduct?.collection_id ? `collections/${editingProduct.collection_id}` : `products/${productId}`;
-        await adminData.deleteAllProductImagesByProduct(productId);
-        const path = `${folder}/${Date.now()}-${newImageFile.name}`;
-        const { publicUrl, storagePath } = await adminData.uploadToStorage(bucket, path, newImageFile);
-        await adminData.addProductImage(productId, {
-          url: publicUrl,
-          alt_text: newImageFile.name,
-          is_primary: true,
-          sort_order: 0,
-          bucket_name: bucket,
-          storage_path: storagePath,
+        adminProductsLog("info", "salvar:imagem:start", {
+          opId,
+          productId,
+          bucket,
+          folder,
+          fileName: newImageFile.name,
+          fileSize: newImageFile.size,
+          fileType: newImageFile.type,
         });
+
+        const deletePendingLog = window.setTimeout(() => {
+          adminProductsLog("warn", "salvar:imagem:deleteAll:pendente", { opId, productId, waitedMs: 15000 });
+        }, 15000);
+        try {
+          await adminData.deleteAllProductImagesByProduct(productId);
+        } finally {
+          window.clearTimeout(deletePendingLog);
+        }
+        adminProductsLog("info", "salvar:imagem:deleteAll:ok", { opId, productId });
+
+        const path = `${folder}/${Date.now()}-${newImageFile.name}`;
+        const uploadPendingLog = window.setTimeout(() => {
+          adminProductsLog("warn", "salvar:imagem:upload:pendente", { opId, productId, waitedMs: 15000, path });
+        }, 15000);
+        let uploaded: { publicUrl: string; storagePath: string };
+        try {
+          uploaded = await adminData.uploadToStorage(bucket, path, newImageFile);
+        } finally {
+          window.clearTimeout(uploadPendingLog);
+        }
+        const { publicUrl, storagePath } = uploaded;
+        adminProductsLog("info", "salvar:imagem:upload:ok", { opId, productId, storagePath });
+        newPrimaryImageUrl = publicUrl;
+
+        const addPendingLog = window.setTimeout(() => {
+          adminProductsLog("warn", "salvar:imagem:add:pendente", { opId, productId, waitedMs: 15000 });
+        }, 15000);
+        try {
+          await adminData.addProductImage(productId, {
+            url: publicUrl,
+            alt_text: newImageFile.name,
+            is_primary: true,
+            sort_order: 0,
+            bucket_name: bucket,
+            storage_path: storagePath,
+          });
+        } finally {
+          window.clearTimeout(addPendingLog);
+        }
+        adminProductsLog("info", "salvar:imagem:add:ok", { opId, productId });
       }
-      closeModal();
-      loadProducts();
+      setShowModal(false);
+      setEditingProduct(null);
+      setProducts((prev) => prev.map((p) => {
+        if (p.id !== productId) return p;
+        const updated = {
+          ...p,
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price || '0'),
+          promotional_price: formData.promotional_price ? parseFloat(formData.promotional_price) : undefined,
+          stock: parseInt(formData.stock || '0'),
+          is_active: !!formData.is_active,
+          is_featured: !!formData.is_featured,
+          is_new: !!formData.is_new,
+        } as Product;
+        if (newPrimaryImageUrl) {
+          updated.images = [{ url: newPrimaryImageUrl, is_primary: true }];
+        }
+        return updated;
+      }));
+      adminProductsLog("info", "salvar:ok", { opId, productId });
     } catch (e) {
+      console.error("[AdminProducts] Erro ao salvar produto:", e);
       alert('Erro ao salvar produto');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -298,6 +421,21 @@ const AdminProducts: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {loading && (
+          <div className="text-slate-300">Carregando produtos...</div>
+        )}
+        {!loading && products.length === 0 && (
+          <div className="text-slate-300">
+            Nenhum produto carregado.
+            <button
+              className="ml-2 px-3 py-1 rounded bg-amber-400 text-slate-900"
+              onClick={() => loadProducts()}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
 
         <div className="sm:hidden space-y-3">
           {products.map((product) => (
@@ -607,7 +745,7 @@ const AdminProducts: React.FC = () => {
                   Cancelar
                 </button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-medium transition-colors">
-                  Atualizar
+                  {isSaving ? 'Salvando...' : 'Atualizar'}
                 </button>
               </div>
               <div className="pt-4">

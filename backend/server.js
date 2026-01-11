@@ -38,14 +38,23 @@ const PORT = process.env.PORT || 3001;
 
 // Security middleware
 app.use(helmet());
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:3000',
-  'http://localhost:8081',
-  'http://localhost:8082',
-  'http://localhost:8282'
-].filter(Boolean);
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isLocal =
+      origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:');
+    if (isProd) {
+      const ok = allowedOrigins.includes(origin);
+      return callback(ok ? null : new Error('CORS'), ok);
+    }
+    const ok = isLocal || allowedOrigins.includes(origin);
+    return callback(ok ? null : new Error('CORS'), ok);
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

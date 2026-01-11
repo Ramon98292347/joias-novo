@@ -20,8 +20,7 @@ export const adminAuth = {
     // Autentica imediatamente após cadastro
     const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
     if (loginErr) throw new Error(loginErr.message);
-    // Sincroniza admin_users com o usuário atual
-    await adminData.ensureCurrentAdminUser();
+    // Removido: sincronização automática para evitar conflitos (409).
     return login;
   },
 

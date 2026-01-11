@@ -64,7 +64,7 @@ const AdminProductForm: React.FC = () => {
       const response = await fetchCategories({ includeInactive: true });
       setCategories(response || []);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error('Erro ao carregar categorias:', error);
     }
   };
 
@@ -73,7 +73,7 @@ const AdminProductForm: React.FC = () => {
       const response = await fetchCollections({ includeInactive: true });
       setCollections(response || []);
     } catch (error) {
-      console.error('Error loading collections:', error);
+      console.error('Erro ao carregar coleções:', error);
     }
   };
 
@@ -103,7 +103,7 @@ const AdminProductForm: React.FC = () => {
         images: [],
       });
     } catch (error) {
-      console.error('Error loading product:', error);
+      console.error('Erro ao carregar produto:', error);
     } finally {
       setLoading(false);
     }
@@ -210,7 +210,7 @@ const AdminProductForm: React.FC = () => {
       }, 1500);
       
     } catch (error) {
-      console.error('Error saving product:', error);
+      console.error('Erro ao salvar produto:', error);
       alert('Erro ao salvar produto. Tente novamente.');
     } finally {
       setSubmitting(false);

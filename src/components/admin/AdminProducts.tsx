@@ -66,7 +66,7 @@ const AdminProducts: React.FC = () => {
       const { products } = await fetchProducts({ page: 1, limit: 200, ...params });
       setProducts(products || []);
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Erro ao carregar produtos:', error);
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const AdminProducts: React.FC = () => {
       const response = await fetchCategories({ includeInactive: true });
       setCategories(response || []);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error('Erro ao carregar categorias:', error);
     }
   };
 
@@ -86,7 +86,7 @@ const AdminProducts: React.FC = () => {
       const response = await fetchCollections({ includeInactive: true });
       setCollections(response || []);
     } catch (error) {
-      console.error('Error loading collections:', error);
+      console.error('Erro ao carregar coleções:', error);
     }
   };
 

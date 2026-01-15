@@ -423,19 +423,6 @@ const AdminProductForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Preço Promocional</label>
-                <input
-                  type="number"
-                  name="promotional_price"
-                  value={formData.promotional_price}
-                  onChange={handleInputChange}
-                  step="0.01"
-                  min="0"
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Estoque *</label>
                 <input
                   type="number"

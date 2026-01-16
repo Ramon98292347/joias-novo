@@ -1,4 +1,4 @@
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.status(204).end();
     return;
@@ -25,4 +25,4 @@ module.exports = async (req, res) => {
     console.error("Erro ao encaminhar webhook (orcamento):", e);
     res.status(200).json({ success: false, error: String(e?.message || e) });
   }
-};
+}

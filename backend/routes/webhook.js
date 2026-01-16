@@ -4,7 +4,7 @@ const router = express.Router();
 // Rota webhook para receber contatos do formulário
 router.post('/contato', async (req, res) => {
   try {
-    const { email, telefone, origem, timestamp } = req.body;
+    const { email, telefone, origem, timestamp, description, mensagem } = req.body;
 
     // Validação básica
     if (!email || !email.includes('@')) {
@@ -26,6 +26,9 @@ router.post('/contato', async (req, res) => {
     console.log('📧 Email:', email);
     console.log('📱 Telefone:', telefone || 'Não informado');
     console.log('📝 Origem:', origem);
+    if (description || mensagem) {
+      console.log('🗒️ Descrição:', description || mensagem);
+    }
     console.log('⏰ Timestamp:', timestamp);
     console.log('🌐 IP:', req.ip);
     console.log('👤 User-Agent:', req.get('User-Agent'));
@@ -137,12 +140,57 @@ router.post('/orcamento', async (req, res) => {
       customer_name: payload.customer_name,
       customer_email: payload.customer_email,
       customer_phone: payload.customer_phone,
+      description: payload.description || payload.customer_message || null,
       cart_items_count: Array.isArray(payload.cart_items) ? payload.cart_items.length : 0,
       cart_total: payload.cart_total,
     });
+
+    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
+    try {
+      await fetch(n8nUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'orcamento',
+          customer_name: payload.customer_name,
+          customer_email: payload.customer_email,
+          customer_phone: payload.customer_phone,
+          description: payload.description || payload.customer_message || '',
+          cart_items: Array.isArray(payload.cart_items) ? payload.cart_items : [],
+          cart_total: payload.cart_total ?? 0,
+          site_url: (req.headers.origin || req.get('Origin') || ''),
+          user_agent: req.get('User-Agent') || '',
+        }),
+      });
+    } catch (err) {
+      console.warn('⚠️ Falha ao encaminhar para n8n:', err?.message);
+    }
     res.json({ success: true, message: 'Orçamento recebido com sucesso!' });
   } catch (error) {
     console.error('Erro no webhook de orçamento:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+  }
+});
+
+router.post('/order', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
+    try {
+      await fetch(n8nUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'order',
+          ...payload,
+        }),
+      });
+    } catch (err) {
+      console.warn('⚠️ Falha ao encaminhar pedido para n8n:', err?.message);
+    }
+    res.json({ success: true, message: 'Pedido encaminhado com sucesso!' });
+  } catch (error) {
+    console.error('Erro no webhook de pedido:', error);
     res.status(500).json({ success: false, error: 'Erro interno do servidor' });
   }
 });

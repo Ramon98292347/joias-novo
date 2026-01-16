@@ -127,7 +127,21 @@ const Buscar = () => {
             {products.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.original_price ?? undefined}
+                    image={
+                      product.images?.find((img) => img?.is_primary)?.url ||
+                      product.images?.[0]?.url ||
+                      "/placeholder.svg"
+                    }
+                    category={product.category?.name || "Sem categoria"}
+                    isNew={false}
+                    isBestseller={false}
+                  />
                 ))}
               </div>
             )}

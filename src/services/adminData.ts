@@ -31,6 +31,14 @@ export const adminData = {
 
   async upsertProduct(id: string | null, payload: any) {
     adminDataLog("info", "upsertProduct:start", { id, hasId: !!id });
+    const sizes = (() => {
+      if (!Array.isArray(payload?.sizes)) return null;
+      const ints = payload.sizes
+        .map((v: any) => Number(v))
+        .filter((n: number) => Number.isFinite(n))
+        .map((n: number) => Math.trunc(n));
+      return ints.length > 0 ? ints : null;
+    })();
     const sanitized: any = {
       name: payload?.name,
       description: payload?.description ?? null,
@@ -41,6 +49,7 @@ export const adminData = {
       promotional_price: payload?.promotional_price ?? null,
       stock: typeof payload?.stock === "number" ? payload.stock : null,
       tags: Array.isArray(payload?.tags) ? payload.tags : [],
+      sizes,
       is_active: !!payload?.is_active,
       is_featured: !!payload?.is_featured,
       is_new: !!payload?.is_new,

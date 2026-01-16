@@ -15,6 +15,7 @@ interface OrcamentoFormProps {
     price: number;
     quantity: number;
     image?: string;
+    description?: string | null;
   }>;
   cartTotal?: number;
   onSuccess?: () => void;
@@ -51,7 +52,11 @@ const OrcamentoForm = ({ cartItems = [], cartTotal = 0, onSuccess }: OrcamentoFo
         },
         body: JSON.stringify({
           ...formData,
-          cart_items: cartItems,
+          description: formData.customer_message,
+          cart_items: (cartItems || []).map((it) => ({
+            ...it,
+            description: it.description ?? null,
+          })),
           cart_total: cartTotal
         }),
       });

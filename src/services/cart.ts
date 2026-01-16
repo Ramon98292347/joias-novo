@@ -11,6 +11,7 @@ export type CartItem = {
   product?: {
     id: string;
     name: string;
+    description?: string | null;
     price: number;
     promotional_price?: number | null;
     images?: { url: string; is_primary?: boolean | null; sort_order?: number | null }[] | null;
@@ -32,9 +33,9 @@ export const cartService = {
   async listItems(): Promise<CartItem[]> {
     let cid = this.getCartId();
     const attempts: string[] = [
-      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price,images:imagens_do_produto(url,is_primary,sort_order))`,
-      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price,images:product_images(url,is_primary,sort_order))`,
-      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,price,promotional_price)`
+      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,description,price,promotional_price,images:imagens_do_produto(url,is_primary,sort_order))`,
+      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,description,price,promotional_price,images:product_images(url,is_primary,sort_order))`,
+      `id,cart_id,product_id,quantity,unit_price,total_price,customization,product:products(id,name,description,price,promotional_price)`
     ];
 
     const tryFetch = async (cartId: string) => {

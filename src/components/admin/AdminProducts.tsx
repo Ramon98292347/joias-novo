@@ -41,6 +41,8 @@ const AdminProducts: React.FC = () => {
     price: '',
     promotional_price: '',
     stock: '',
+    size_from: '',
+    size_to: '',
     is_active: true,
     is_featured: false,
     is_new: false,
@@ -165,6 +167,17 @@ const AdminProducts: React.FC = () => {
       ]);
       if (categories.length === 0) setCategories((cats as any[]) || []);
       if (collections.length === 0) setCollections((cols as any[]) || []);
+      const parsedSizes = (() => {
+        const raw = (full as any)?.sizes;
+        if (!Array.isArray(raw)) return null;
+        const ints = raw
+          .map((v: any) => Number(v))
+          .filter((n: number) => Number.isFinite(n))
+          .map((n: number) => Math.trunc(n));
+        if (ints.length === 0) return null;
+        ints.sort((a: number, b: number) => a - b);
+        return { from: ints[0], to: ints[ints.length - 1] };
+      })();
       setEditingProduct(full);
       setFormData({
         name: full.name || '',
@@ -175,6 +188,8 @@ const AdminProducts: React.FC = () => {
         price: (full.price ?? '').toString(),
         promotional_price: (full.promotional_price ?? '').toString(),
         stock: (full.stock ?? '').toString(),
+        size_from: parsedSizes ? String(parsedSizes.from) : '',
+        size_to: parsedSizes ? String(parsedSizes.to) : '',
         is_active: !!full.is_active,
         is_featured: !!full.is_featured,
         is_new: !!full.is_new,
@@ -209,6 +224,8 @@ const AdminProducts: React.FC = () => {
       price: '',
       promotional_price: '',
       stock: '',
+      size_from: '',
+      size_to: '',
       is_active: true,
       is_featured: false,
       is_new: false,
@@ -231,6 +248,20 @@ const AdminProducts: React.FC = () => {
       setIsSaving(true);
       const opId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const productId = editingProduct.id as string;
+      const sizes = (() => {
+        const fromRaw = String(formData.size_from ?? '').trim();
+        const toRaw = String(formData.size_to ?? '').trim();
+        if (!fromRaw && !toRaw) return null;
+        const from = Number(fromRaw);
+        const to = Number(toRaw);
+        if (!Number.isInteger(from) || !Number.isInteger(to) || from > to) return undefined;
+        return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+      })();
+      if (sizes === undefined) {
+        alert('Tamanho inválido. Preencha "De" e "Até" com inteiros, e "De" deve ser menor ou igual a "Até".');
+        setIsSaving(false);
+        return;
+      }
       adminProductsLog("info", "salvar:start", {
         opId,
         productId,
@@ -252,6 +283,7 @@ const AdminProducts: React.FC = () => {
           price: parseFloat(formData.price || '0'),
           promotional_price: formData.promotional_price ? parseFloat(formData.promotional_price) : null,
           stock: parseInt(formData.stock || '0'),
+          sizes,
           is_active: !!formData.is_active,
           is_featured: !!formData.is_featured,
           is_new: !!formData.is_new,
@@ -702,6 +734,34 @@ const AdminProducts: React.FC = () => {
                       value={formData.material}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Tamanho (de)</label>
+                    <input
+                      type="number"
+                      name="size_from"
+                      value={formData.size_from}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      step="1"
+                      min="0"
+                      placeholder="Ex: 5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Tamanho (até)</label>
+                    <input
+                      type="number"
+                      name="size_to"
+                      value={formData.size_to}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      step="1"
+                      min="0"
+                      placeholder="Ex: 32"
                     />
                   </div>
                 </div>

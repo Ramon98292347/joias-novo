@@ -407,7 +407,7 @@ const AdminProductForm: React.FC = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <h3 className="text-lg font-semibold text-white mb-4">Preço e Estoque</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Preço *</label>
                 <input
@@ -432,6 +432,38 @@ const AdminProductForm: React.FC = () => {
                   required
                   min="0"
                   className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-lg font-semibold text-white mb-4">Tamanho do Produto</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">De</label>
+                <input
+                  type="number"
+                  name="size_from"
+                  value={formData.size_from}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="1"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  placeholder="Ex: 5"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Até</label>
+                <input
+                  type="number"
+                  name="size_to"
+                  value={formData.size_to}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="1"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  placeholder="Ex: 32"
                 />
               </div>
             </div>

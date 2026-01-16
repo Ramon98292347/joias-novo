@@ -26,8 +26,9 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
 
-  const formatPrice = (value: number) => {
-    return value.toLocaleString("pt-BR", {
+  const formatPrice = (value?: number | null) => {
+    const v = typeof value === "number" ? value : Number(value || 0);
+    return v.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
     });

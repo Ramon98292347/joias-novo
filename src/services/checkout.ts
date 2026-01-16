@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { cartService, CartItem } from "@/services/cart";
+import { getApiBaseUrl } from "@/lib/api";
 
 export type CustomerInfo = {
   name: string;
@@ -89,6 +90,7 @@ export const checkoutService = {
       items: items.map((it) => ({
         product_id: it.product_id,
         name: it.product?.name || "Produto",
+        description: it.product?.description ?? null,
         quantity: it.quantity,
         unit_price: it.unit_price,
         total_price: it.total_price,
@@ -103,7 +105,8 @@ export const checkoutService = {
     };
 
     try {
-      await fetch("https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias", {
+      const base = getApiBaseUrl();
+      await fetch(`${base}/api/webhook/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

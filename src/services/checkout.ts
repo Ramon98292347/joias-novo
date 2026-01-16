@@ -105,8 +105,7 @@ export const checkoutService = {
     };
 
     try {
-      const base = getApiBaseUrl();
-      const url = import.meta.env.DEV ? `${base}/api/webhook/order` : `/api/webhook/order`;
+      const url = import.meta.env.DEV ? `${getApiBaseUrl()}/api/webhook/order` : "/api/webhook/order";
       await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

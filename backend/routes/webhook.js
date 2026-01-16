@@ -145,7 +145,10 @@ router.post('/orcamento', async (req, res) => {
       cart_total: payload.cart_total,
     });
 
-    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
+    const n8nUrl =
+      process.env.N8N_WEBHOOK_URL ||
+      process.env.URL_do_WEBHOOK_N8N ||
+      'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
     try {
       await fetch(n8nUrl, {
         method: 'POST',
@@ -175,7 +178,10 @@ router.post('/orcamento', async (req, res) => {
 router.post('/order', async (req, res) => {
   try {
     const payload = req.body || {};
-    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
+    const n8nUrl =
+      process.env.N8N_WEBHOOK_URL ||
+      process.env.URL_do_WEBHOOK_N8N ||
+      'https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias';
     try {
       await fetch(n8nUrl, {
         method: 'POST',

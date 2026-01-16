@@ -4,7 +4,10 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const n8nUrl = process.env.N8N_WEBHOOK_URL || "https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias";
+  const n8nUrl =
+    process.env.N8N_WEBHOOK_URL ||
+    process.env.URL_do_WEBHOOK_N8N ||
+    "https://n8n-n8n.ynlng8.easypanel.host/webhook/revic-joias";
   const payload = req.body || {};
 
   try {
@@ -19,4 +22,3 @@ module.exports = async (req, res) => {
     res.status(200).json({ success: false, error: String(e?.message || e) });
   }
 };
-
